@@ -84,7 +84,7 @@ const Navbar = () => {
           <div className="flex justify-center items-center w-8 h-8 bg-black text-white rounded">
             <Film size={16} />
           </div>
-          <h1 className="text-lg font-semibold">Viral AI UGC</h1>
+          <h1 className="text-lg font-semibold">REELOAD</h1>
         </div>
       </div>
       
