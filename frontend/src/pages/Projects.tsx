@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Plus, Settings, Trash, Eye, Pause, Play } from "lucide-react";
+import { MoreHorizontal, Plus, Settings, Trash, Eye, Pause, Play, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,22 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { useProjects, useDeleteProject, type Project, type ProjectStatus } from "@/hooks/useProjects";
+import { toast } from "sonner";
 
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  target_audience: string;
-  status: 'active' | 'generating' | 'draft' | 'paused';
-  created_at: string;
-  video_count: number;
-  last_generated: string | null;
-}
 
-// Will be replaced with real data from Supabase
-const mockProjects: Project[] = [];
 
-const getStatusBadge = (status: Project['status']) => {
+const getStatusBadge = (status: ProjectStatus) => {
   switch (status) {
     case 'active':
       return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Активен</Badge>;
@@ -36,12 +26,14 @@ const getStatusBadge = (status: Project['status']) => {
       return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Черновик</Badge>;
     case 'paused':
       return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Приостановлен</Badge>;
+    case 'completed':
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Завершен</Badge>;
     default:
       return <Badge>Неизвестно</Badge>;
   }
 };
 
-const getStatusIcon = (status: Project['status']) => {
+const getStatusIcon = (status: ProjectStatus) => {
   switch (status) {
     case 'active':
       return <Play className="w-4 h-4 text-green-600" />;
@@ -51,6 +43,8 @@ const getStatusIcon = (status: Project['status']) => {
       return <Settings className="w-4 h-4 text-gray-600" />;
     case 'paused':
       return <Pause className="w-4 h-4 text-orange-600" />;
+    case 'completed':
+      return <Play className="w-4 h-4 text-green-600" />;
     default:
       return null;
   }
@@ -59,6 +53,8 @@ const getStatusIcon = (status: Project['status']) => {
 const Projects = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { data: projects = [], isLoading, error } = useProjects();
+  const deleteProjectMutation = useDeleteProject();
 
   const handleCreateProject = () => {
     navigate('/projects/new');
@@ -74,8 +70,9 @@ const Projects = () => {
   };
 
   const handleDeleteProject = (projectId: string) => {
-    // Show confirmation dialog and delete project
-    console.log('Delete project:', projectId);
+    if (confirm('Вы уверены, что хотите удалить этот проект?')) {
+      deleteProjectMutation.mutate(projectId);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -108,8 +105,36 @@ const Projects = () => {
               </Button>
             </div>
 
-            {/* Projects Grid */}
-            {mockProjects.length === 0 ? (
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+                <span className="ml-2 text-neutral-600">Загрузка проектов...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="text-center py-12">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                    <Trash className="w-8 h-8 text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-neutral-900">Ошибка загрузки</h3>
+                    <p className="text-neutral-600 mt-1">
+                      Не удалось загрузить проекты. Попробуйте обновить страницу.
+                    </p>
+                  </div>
+                  <Button onClick={() => window.location.reload()}>
+                    Обновить
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!isLoading && !error && projects.length === 0 && (
               <div className="text-center py-12">
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
@@ -126,9 +151,12 @@ const Projects = () => {
                   </Button>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {/* Projects Grid */}
+            {!isLoading && !error && projects.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockProjects.map((project) => (
+                {projects.map((project) => (
                   <Card key={project.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
@@ -154,8 +182,13 @@ const Projects = () => {
                             <DropdownMenuItem 
                               onClick={() => handleDeleteProject(project.id)}
                               className="text-red-600"
+                              disabled={deleteProjectMutation.isPending}
                             >
-                              <Trash className="w-4 h-4 mr-2" />
+                              {deleteProjectMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              ) : (
+                                <Trash className="w-4 h-4 mr-2" />
+                              )}
                               Удалить
                             </DropdownMenuItem>
                           </DropdownMenuContent>

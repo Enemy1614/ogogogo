@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, Upload, Music, Video, MessageSquare } from "lucide-react";
+import { ArrowLeft, ArrowRight, Upload, Music, Video, MessageSquare, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useProject, useCreateProject, useUpdateProject, type Project } from "@/hooks/useProjects";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProjectFormData {
   name: string;
@@ -42,6 +44,13 @@ const priceCategoryOptions = [
 const ProjectEdit = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // API hooks
+  const { data: project, isLoading: isLoadingProject } = useProject(id);
+  const createProjectMutation = useCreateProject();
+  const updateProjectMutation = useUpdateProject();
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [isProjectDetailsOpen, setIsProjectDetailsOpen] = useState(true);
   const [formData, setFormData] = useState<ProjectFormData>({
@@ -59,23 +68,54 @@ const ProjectEdit = () => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [hookFiles, setHookFiles] = useState<File[]>([]);
 
+  // Load project data when editing existing project
   useEffect(() => {
-    // If we have a project ID, we would load the project data here
-    if (id) {
-      console.log("Loading project:", id);
-      // This would be replaced with actual API call
+    if (project) {
+      setFormData({
+        name: project.name,
+        description: project.description,
+        target_audience: project.target_audience,
+        tone: project.tone,
+        price_category: project.price_category || "",
+        keywords: project.keywords || "",
+        unique_proposition: project.unique_proposition || "",
+        call_to_action: project.call_to_action || "",
+        website: project.website || "",
+      });
+      
+      // If project is not a draft, start from step 2
+      if (project.status !== 'draft') {
+        setIsProjectDetailsOpen(false);
+        setCurrentStep(2);
+      }
     }
-  }, [id]);
+  }, [project]);
 
-  const handleProjectDetailsSubmit = () => {
+  const handleProjectDetailsSubmit = async () => {
     if (!formData.name || !formData.description || !formData.target_audience || !formData.tone) {
       toast.error("Пожалуйста, заполните все обязательные поля");
       return;
     }
-    
-    setIsProjectDetailsOpen(false);
-    setCurrentStep(2);
-    toast.success("Детали проекта сохранены");
+
+    try {
+      if (id && project) {
+        // Update existing project
+        await updateProjectMutation.mutateAsync({
+          id,
+          ...formData,
+        });
+      } else {
+        // Create new project
+        const newProject = await createProjectMutation.mutateAsync(formData);
+        // Redirect to edit the newly created project
+        navigate(`/projects/${newProject.id}/edit`, { replace: true });
+      }
+      
+      setIsProjectDetailsOpen(false);
+      setCurrentStep(2);
+    } catch (error) {
+      console.error("Error saving project:", error);
+    }
   };
 
   const handleDemoUpload = (file: File) => {
@@ -92,10 +132,25 @@ const ProjectEdit = () => {
 
 
 
-  const handleFinalize = () => {
-    // Here we would save all data and start the generation process
-    toast.success("Проект создан! Начинаем генерацию видео...");
-    navigate("/projects");
+  const handleFinalize = async () => {
+    if (!id || !project) {
+      toast.error("Ошибка: проект не найден");
+      return;
+    }
+
+    try {
+      // Update project status to active to start generation
+      await updateProjectMutation.mutateAsync({
+        id,
+        status: "active",
+      });
+      
+      toast.success("Проект создан! Начинаем генерацию видео...");
+      navigate("/projects");
+    } catch (error) {
+      console.error("Error finalizing project:", error);
+      toast.error("Ошибка при завершении создания проекта");
+    }
   };
 
   const getStepTitle = () => {
@@ -227,6 +282,18 @@ const ProjectEdit = () => {
     }
   };
 
+  // Show loading spinner while loading project data
+  if (isLoadingProject) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <Loader2 className="w-6 h-6 animate-spin text-neutral-600" />
+          <span className="text-neutral-600">Загрузка проекта...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Project Details Modal - Step 1 */}
@@ -346,7 +413,13 @@ const ProjectEdit = () => {
               <Button variant="outline" onClick={() => navigate("/projects")}>
                 Отмена
               </Button>
-              <Button onClick={handleProjectDetailsSubmit}>
+              <Button 
+                onClick={handleProjectDetailsSubmit}
+                disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
+              >
+                {(createProjectMutation.isPending || updateProjectMutation.isPending) && (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                )}
                 Продолжить
               </Button>
             </div>
@@ -425,7 +498,11 @@ const ProjectEdit = () => {
               <Button 
                 onClick={handleFinalize}
                 className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
+                disabled={updateProjectMutation.isPending}
               >
+                {updateProjectMutation.isPending && (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                )}
                 Сохранить и начать создавать
               </Button>
             ) : (

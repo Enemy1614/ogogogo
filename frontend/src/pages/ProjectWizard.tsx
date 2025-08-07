@@ -1,16 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle, Play, Video, Music, MessageSquare, Calendar } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Play, Video, Music, MessageSquare, Calendar, Loader2 } from "lucide-react";
+import { useCreateProject } from "@/hooks/useProjects";
+import { toast } from "sonner";
 
 const ProjectWizard = () => {
   const navigate = useNavigate();
+  const createProjectMutation = useCreateProject();
 
   const handleGetStarted = async () => {
-    // Here we would create a new project draft in the database
-    // For now, simulate creating a project and redirect to edit page
-    const newProjectId = "c6174654-36fc-45cd-a73a-5c1946129712"; // This would come from the backend
-    navigate(`/projects/${newProjectId}/edit`);
+    try {
+      // Create a new project draft with minimal data
+      const newProject = await createProjectMutation.mutateAsync({
+        name: "Новый проект",
+        description: "Описание проекта",
+        target_audience: "Целевая аудитория",
+        tone: "professional",
+        status: "draft",
+      });
+      
+      // Redirect to edit the newly created project
+      navigate(`/projects/${newProject.id}/edit`);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      toast.error("Ошибка при создании проекта");
+    }
   };
 
   return (
@@ -141,9 +156,19 @@ const ProjectWizard = () => {
           <Button 
             onClick={handleGetStarted}
             className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
+            disabled={createProjectMutation.isPending}
           >
-            Начать
-            <ArrowRight className="w-4 h-4" />
+            {createProjectMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Создаем проект...
+              </>
+            ) : (
+              <>
+                Начать
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </div>
       </div>
