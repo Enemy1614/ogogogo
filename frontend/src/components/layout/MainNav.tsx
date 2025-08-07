@@ -19,7 +19,7 @@ const MainNav = () => {
             Dashboard
           </Link>
           <a 
-            href="https://x.com/rushabtated4" 
+            href="t.me/severth" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

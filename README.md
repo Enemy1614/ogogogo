@@ -6,7 +6,7 @@ Assets link: https://drive.google.com/drive/folders/1UsaV1nXoU672Ung-IEzENOaUMyW
 
 Viral AI UGC is an AI UGC content tool for TikTok. Frontend and DB are completely vibe-coded with Lovable.
  The tech stack includes Vite (React) for the frontend, Supabase for the database, Vercel for hosting, and a Node.js server that runs locally to render videos at no cost. You can use everything on the free tier of each service. T
-he entire project was built in just 48 hours spread across one week. Feel free to use it, and don't hesitate to [reach out](https://x.com/rushabtated4) if you encounter any issues.
+he entire project was built in just 48 hours spread across one week. Feel free to use it, and don't hesitate to [reach out](t.me/severth) if you encounter any issues.
 
 ## Overview
 
@@ -451,8 +451,8 @@ If you encounter issues during setup:
 ## Additional Resources
 
 - **Default Content**: The platform comes with 20 AI templates and 10 sounds for free video generation
-- **Premium Templates**: Additional templates (100+) are available for purchase for $200 -  [contact here](https://x.com/rushabtated4)
-- **Setup Assistance**: Professional setup services are available for $200 -  [contact here](https://x.com/rushabtated4)
-- **Hosted Version**: If you are looking for hosted version for $199/yr with unlimited video generation, meme generation and more features - [contact here](https://x.com/rushabtated4)
+- **Premium Templates**: Additional templates (100+) are available for purchase for $200 -  [contact here](t.me/severth)
+- **Setup Assistance**: Professional setup services are available for $200 -  [contact here](t.me/severth)
+- **Hosted Version**: If you are looking for hosted version for $199/yr with unlimited video generation, meme generation and more features - [contact here](t.me/severth)
 
-For additional assistance or to purchase premium templates, [please contact support.](https://x.com/rushabtated4)
+For additional assistance or to purchase premium templates, [please contact support.](t.me/severth)

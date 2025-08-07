@@ -65,7 +65,7 @@ const SelfHost = () => {
   ];
 
   const handleSupportClick = () => {
-    window.open("https://x.com/rushabtated4", "_blank");
+    window.open("t.me/severth", "_blank");
   };
 
   return (
