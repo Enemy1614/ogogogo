@@ -135,7 +135,6 @@ const Navbar = () => {
             </div>
           </PopoverContent>
         </Popover>
-        <NavItem icon={<ExternalLink size={18} />} label="Самостоятельный хостинг" to="/self-host" onClick={() => window.open("/self-host", "_blank", "noopener,noreferrer")} />
       </div>
       
       <div className="p-4 border-t border-border">
