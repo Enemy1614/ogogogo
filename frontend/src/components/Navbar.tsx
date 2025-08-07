@@ -97,7 +97,7 @@ const Navbar = () => {
       </nav>
       
       <div className="border-t border-border p-4 space-y-1">
-        <NavItem icon={<HelpCircle size={18} />} label="Поддержка" onClick={() => window.open("t.me/severth", "_blank", "noopener,noreferrer")} />
+        <NavItem icon={<HelpCircle size={18} />} label="Поддержка" onClick={() => window.open("https://t.me/severth", "_blank", "noopener,noreferrer")} />
         
         <Popover>
           <PopoverTrigger asChild>

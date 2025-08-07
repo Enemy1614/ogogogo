@@ -218,7 +218,7 @@ const ContentGenerator = () => {
   };
 
   const handleTwitterDM = () => {
-    window.open('t.me/severth', '_blank');
+    window.open('https://t.me/severth', '_blank');
     setUpgradeDialogOpen(false);
   };
 

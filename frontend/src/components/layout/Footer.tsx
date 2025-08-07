@@ -31,7 +31,7 @@ const Footer = () => {
                 </li>
                 <li>
                   <a 
-                    href="t.me/severth"
+                    href="https://t.me/severth"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -41,7 +41,7 @@ const Footer = () => {
                 </li>
                 <li>
                   <a 
-                    href="t.me/severth"
+                    href="https://t.me/severth"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
