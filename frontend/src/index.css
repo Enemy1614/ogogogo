@@ -7,64 +7,64 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 240 4% 96%; /* #F4F4F5 - background.primary */
     --foreground: 240 10% 3.9%;
 
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* #FFFFFF - background.secondary */
     --card-foreground: 240 10% 3.9%;
 
-    --popover: 0 0% 100%;
+    --popover: 0 0% 100%; /* #FFFFFF - background.secondary */
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 4%; /* #0A0A0A - primary.900 */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
+    --secondary: 240 5% 96%; /* #F5F5F5 - neutral.100 */
     --secondary-foreground: 240 6% 10%;
 
-    --muted: 240 5% 96%;
+    --muted: 240 5% 96%; /* #F5F5F5 - neutral.100 */
     --muted-foreground: 240 4% 46%;
 
-    --accent: 240 5% 96%;
+    --accent: 240 5% 96%; /* #F5F5F5 - neutral.100 */
     --accent-foreground: 240 6% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 60%; /* #EF4444 - semantic.error */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
+    --border: 240 6% 90%; /* #E5E5E5 - neutral.200 */
+    --input: 240 6% 90%; /* #E5E5E5 - neutral.200 */
     --ring: 240 5% 65%;
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 4%;
+    --background: 0 0% 4%; /* #0A0A0A - background.dark */
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 4%;
+    --card: 0 0% 4%; /* #0A0A0A - background.dark */
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 4%;
+    --popover: 0 0% 4%; /* #0A0A0A - background.dark */
     --popover-foreground: 0 0% 98%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 0 0% 100%; /* #FFFFFF - для контраста в темной теме */
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 240 4% 16%;
+    --secondary: 240 4% 16%; /* #262626 - neutral.800 */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 4% 16%;
+    --muted: 240 4% 16%; /* #262626 - neutral.800 */
     --muted-foreground: 240 5% 65%;
 
-    --accent: 240 4% 16%;
+    --accent: 240 4% 16%; /* #262626 - neutral.800 */
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 63% 31%; /* #EF4444 - semantic.error в темной теме */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
+    --border: 240 4% 16%; /* #262626 - neutral.800 */
+    --input: 240 4% 16%; /* #262626 - neutral.800 */
     --ring: 240 5% 65%;
   }
 }
@@ -106,6 +106,45 @@
 
 .glass-effect {
   @apply backdrop-blur-lg bg-white/80 dark:bg-black/50 border border-white/20;
+}
+
+/* Design System specific styles */
+.scale-98 {
+  transform: scale(0.98);
+}
+
+.duration-250 {
+  transition-duration: 250ms;
+}
+
+/* Button focus shadows */
+.focus-shadow-primary {
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.2);
+}
+
+.focus-shadow-destructive {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.focus-shadow-secondary {
+  box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.5);
+}
+
+/* Card shadows */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 .slide-up {
