@@ -110,35 +110,35 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
         onValueChange={setActiveTab}
       >
         <TabsList className="w-full">
-          <TabsTrigger value="background" className="flex-1">Background</TabsTrigger>
-          <TabsTrigger value="text" className="flex-1">Text</TabsTrigger>
+          <TabsTrigger value="background" className="flex-1">Фон</TabsTrigger>
+          <TabsTrigger value="text" className="flex-1">Текст</TabsTrigger>
         </TabsList>
         
         <TabsContent value="background" className="mt-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Background Type</Label>
+              <Label>Тип фона</Label>
               <div className="flex gap-2 mt-2">
                 <Button 
                   variant={slide.backgroundType === "color" ? "default" : "outline"}
                   onClick={() => handleBackgroundTypeChange("color")}
                   size="sm"
                 >
-                  Color
+                  Цвет
                 </Button>
                 <Button 
                   variant={slide.backgroundType === "image" ? "default" : "outline"}
                   onClick={() => handleBackgroundTypeChange("image")}
                   size="sm"
                 >
-                  Image
+                  Изображение
                 </Button>
                 <Button 
                   variant={slide.backgroundType === "grid" ? "default" : "outline"}
                   onClick={() => handleBackgroundTypeChange("grid")}
                   size="sm"
                 >
-                  2x2 Grid
+                  2x2 Сетка
                 </Button>
               </div>
             </div>
@@ -146,7 +146,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
           
           {slide.backgroundType === "color" && (
             <div>
-              <Label htmlFor="bg-color">Background Color</Label>
+              <Label htmlFor="bg-color">Цвет фона</Label>
               <div className="flex gap-2 mt-2">
                 <Input 
                   id="bg-color"
@@ -167,7 +167,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
           
           {slide.backgroundType === "image" && (
             <div>
-              <Label>Background Image</Label>
+              <Label>Изображение фона</Label>
               <div className="mt-2">
                 <Input 
                   type="file" 
@@ -180,7 +180,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
                   <div className="mt-3">
                     <img 
                       src={slide.backgroundImage} 
-                      alt="Background preview" 
+                      alt="Предварительный просмотр фона" 
                       className="max-h-32 rounded-md border" 
                     />
                   </div>
@@ -191,7 +191,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
           
           {slide.backgroundType === "grid" && (
             <div>
-              <Label>2x2 Grid Images</Label>
+              <Label>Изображения сетки 2x2</Label>
               <div className="grid grid-cols-2 gap-3 mt-2">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <div key={index} className="space-y-2">
@@ -206,7 +206,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
                     {slide.gridImages?.[index] && (
                       <img 
                         src={slide.gridImages[index]} 
-                        alt={`Grid image ${index + 1}`} 
+                        alt={`Изображение сетки ${index + 1}`} 
                         className="h-24 w-full object-cover rounded-md border" 
                       />
                     )}
@@ -219,21 +219,21 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
         
         <TabsContent value="text" className="mt-4 space-y-4">
           <div>
-            <Label htmlFor="text-input">Add Text</Label>
+            <Label htmlFor="text-input">Добавить текст</Label>
             <div className="flex gap-2 mt-2">
               <Input 
                 id="text-input"
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Enter text..."
+                placeholder="Введите текст..."
                 className="flex-1"
               />
-              <Button onClick={addTextElement}>Add</Button>
+              <Button onClick={addTextElement}>Добавить</Button>
             </div>
           </div>
           
           <div>
-            <Label>Text Size</Label>
+            <Label>Размер текста</Label>
             <div className="flex gap-2 mt-2">
               {TEXT_SIZE_OPTIONS.map((size) => (
                 <Button 
@@ -249,37 +249,37 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
           </div>
           
           <div>
-            <Label>Text Position</Label>
+            <Label>Позиция текста</Label>
             <div className="flex gap-2 mt-2">
               <Button 
                 variant={textPosition === "top" ? "default" : "outline"}
                 onClick={() => setTextPosition("top")}
                 size="sm"
               >
-                Top
+                Верх
               </Button>
               <Button 
                 variant={textPosition === "center" ? "default" : "outline"}
                 onClick={() => setTextPosition("center")}
                 size="sm"
               >
-                Center
+                Центр
               </Button>
               <Button 
                 variant={textPosition === "bottom" ? "default" : "outline"}
                 onClick={() => setTextPosition("bottom")}
                 size="sm"
               >
-                Bottom
+                Низ
               </Button>
             </div>
           </div>
           
           <div className="mt-6">
-            <h3 className="font-medium mb-2">Text Elements</h3>
+            <h3 className="font-medium mb-2">Текстовые элементы</h3>
             
             {slide.textElements.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No text elements added yet.</p>
+              <p className="text-muted-foreground text-sm">Текстовые элементы еще не добавлены.</p>
             ) : (
               <div className="space-y-2">
                 {slide.textElements.map((element) => (
@@ -298,7 +298,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
                       onClick={() => removeTextElement(element.id)}
                       className="text-destructive"
                     >
-                      Remove
+                      Удалить
                     </Button>
                   </div>
                 ))}
@@ -310,7 +310,7 @@ const CarouselEditor = ({ slide, updateSlide, downloadCurrentSlide }: CarouselEd
       
       <div className="mt-6">
         <Button onClick={downloadCurrentSlide} className="w-full">
-          Download This Slide
+          Скачать этот слайд
         </Button>
       </div>
     </div>

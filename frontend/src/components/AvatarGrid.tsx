@@ -191,12 +191,12 @@ const AvatarGrid = ({
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-medium">{step}. AI Avatar</h3>
+          <h3 className="text-base font-medium">{step}. AI Аватар</h3>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="ml-2">
             <TabsList className="h-7">
-              <TabsTrigger value="aiavatar" className="text-xs px-3 py-1">AI Avatar</TabsTrigger>
-              <TabsTrigger value="game" className="text-xs px-3 py-1">Game</TabsTrigger>
-              <TabsTrigger value="madebyme" className="text-xs px-3 py-1">Made by Me</TabsTrigger>
+              <TabsTrigger value="aiavatar" className="text-xs px-3 py-1">AI Аватар</TabsTrigger>
+              <TabsTrigger value="game" className="text-xs px-3 py-1">Игра</TabsTrigger>
+              <TabsTrigger value="madebyme" className="text-xs px-3 py-1">Созданные мной</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -210,7 +210,7 @@ const AvatarGrid = ({
               className="h-7 text-xs px-3 py-1"
             >
               <Plus className="mr-1 h-3 w-3" />
-              Upload
+              Загрузить
             </Button>
           )}
           <span className="text-sm text-muted-foreground">{currentPage}/{totalPages || 1}</span>

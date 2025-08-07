@@ -41,8 +41,8 @@ const CarouselMaker = () => {
   const deleteSlide = (index: number) => {
     if (slides.length <= 1) {
       toast({
-        title: "Cannot delete",
-        description: "You must have at least one slide",
+        title: "Нельзя удалить",
+        description: "Должен быть хотя бы один слайд",
         variant: "destructive"
       });
       return;
@@ -67,8 +67,8 @@ const CarouselMaker = () => {
     const slideElement = document.getElementById(`slide-preview-${currentSlide.id}`);
     if (!slideElement) {
       toast({
-        title: "Download failed",
-        description: "Could not find slide element to download",
+        title: "Ошибка загрузки",
+        description: "Не удалось найти элемент слайда для загрузки",
         variant: "destructive"
       });
       return;
@@ -76,8 +76,8 @@ const CarouselMaker = () => {
 
     try {
       toast({
-        title: "Preparing download",
-        description: "Generating image...",
+        title: "Подготовка загрузки",
+        description: "Генерация изображения...",
       });
 
       const canvas = await html2canvas(slideElement, {
@@ -94,14 +94,14 @@ const CarouselMaker = () => {
       link.click();
       
       toast({
-        title: "Download complete",
-        description: `Slide ${currentSlideIndex + 1} has been downloaded.`,
+        title: "Загрузка завершена",
+        description: `Слайд ${currentSlideIndex + 1} был загружен.`,
       });
     } catch (error) {
       console.error("Error downloading slide:", error);
       toast({
-        title: "Download failed",
-        description: "An error occurred while downloading the slide.",
+        title: "Ошибка загрузки",
+        description: "Произошла ошибка при загрузке слайда.",
         variant: "destructive"
       });
     }
@@ -112,7 +112,7 @@ const CarouselMaker = () => {
       <div className="flex-1">
         <div className="grid grid-cols-1 gap-6">
           <div className="bg-white rounded-lg shadow-sm border p-4">
-            <h2 className="text-xl font-semibold mb-4">Edit Slide</h2>
+            <h2 className="text-xl font-semibold mb-4">Редактировать слайд</h2>
             <CarouselEditor 
               slide={currentSlide} 
               updateSlide={updateSlide}
@@ -134,7 +134,7 @@ const CarouselMaker = () => {
       
       <div className="lg:w-[350px] sticky top-6 h-[calc(100vh-120px)] self-start">
         <div className="bg-white rounded-lg shadow-sm border p-4 h-full flex flex-col">
-          <h2 className="text-xl font-semibold mb-4">Preview</h2>
+          <h2 className="text-xl font-semibold mb-4">Предварительный просмотр</h2>
           <CarouselPreview 
             slides={slides} 
             currentSlideIndex={currentSlideIndex}

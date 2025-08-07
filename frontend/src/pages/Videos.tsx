@@ -26,12 +26,12 @@ const MyVideos = () => {
       <NavbarWrapper>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">My Videos</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Мои видео</h1>
             
             <Tabs defaultValue="aiugc" onValueChange={(value) => setActiveTab(value as VideoType)}>
               <TabsList className="mb-4 md:mb-6">
-                <TabsTrigger value="aiugc">AI UGC Videos</TabsTrigger>
-                <TabsTrigger value="meme">Meme Videos</TabsTrigger>
+                <TabsTrigger value="aiugc">AI UGC видео</TabsTrigger>
+                <TabsTrigger value="meme">Мем видео</TabsTrigger>
               </TabsList>
               
               <TabsContent value="aiugc">
