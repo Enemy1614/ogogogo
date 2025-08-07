@@ -108,7 +108,7 @@ const Navbar = () => {
           </PopoverTrigger>
           <PopoverContent side="right" className="w-64 p-4">
             <div className="space-y-4">
-              <h3 className="font-medium">User Settings</h3>
+              <h3 className="font-medium">Настройки пользователя</h3>
               
               {user && <div className="flex items-center space-x-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-500 text-white font-medium">
@@ -119,7 +119,7 @@ const Navbar = () => {
                       {user.user_metadata?.full_name || user.email}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {userProfile && <span className="capitalize">{userProfile.plan} Plan</span>}
+                      {userProfile && <span className="capitalize">{userProfile.plan} План</span>}
                     </p>
                   </div>
                 </div>}
@@ -130,7 +130,7 @@ const Navbar = () => {
               
               {user && <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start font-normal text-destructive hover:text-destructive hover:bg-destructive/10">
                   <LogOut size={16} className="mr-2" />
-                  Sign Out
+                  Выйти
                 </Button>}
             </div>
           </PopoverContent>
@@ -148,7 +148,7 @@ const Navbar = () => {
                   {user.user_metadata?.full_name || user.email}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {userProfile && <span className="capitalize">{userProfile.plan} Plan</span>}
+                  {userProfile && <span className="capitalize">{userProfile.plan} План</span>}
                 </p>
               </div>
             </div>
@@ -156,7 +156,7 @@ const Navbar = () => {
             {userProfile && userProfile.plan === 'free' && <div className="flex items-center justify-between mt-2 p-2 bg-secondary/50 rounded-lg">
                 <div className="flex items-center">
                   <CreditCard className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span className="text-xs font-medium">Credits</span>
+                  <span className="text-xs font-medium">Кредиты</span>
                 </div>
                 <span className="text-xs font-bold">{userProfile.credits || 0}</span>
               </div>}

@@ -352,8 +352,8 @@ const ContentPreview = ({
       ) : avatarId === null ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50">
           <UserPlus className="h-12 w-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground text-center font-medium">Please select an avatar</p>
-          <p className="text-xs text-muted-foreground mt-1">Choose from the AI Avatars section</p>
+          <p className="text-muted-foreground text-center font-medium">Пожалуйста, выберите аватар</p>
+          <p className="text-xs text-muted-foreground mt-1">Выберите из раздела AI Аватары</p>
         </div>
       ) : selectedTemplate ? (
         <>

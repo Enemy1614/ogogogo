@@ -97,7 +97,7 @@ const ContentGenerator = () => {
     }
 
     if (!selectedTemplate) {
-      toast.error("Please select an avatar template");
+      toast.error("Пожалуйста, выберите шаблон аватара");
       return;
     }
 
@@ -153,8 +153,8 @@ const ContentGenerator = () => {
       return;
     }
     
-    if (selectedAvatar === null) {
-      toast.error("Please select an avatar");
+    if (!selectedAvatar) {
+      toast.error("Пожалуйста, выберите аватар");
       return;
     }
     
@@ -226,7 +226,7 @@ const ContentGenerator = () => {
     <div className="h-full flex">
       <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-semibold mb-6">Create UGC Ads</h1>
+          <h1 className="text-3xl font-semibold mb-6">Создать UGC рекламу</h1>
           
           <div className="space-y-8">
             <HookInput 
@@ -258,11 +258,11 @@ const ContentGenerator = () => {
       <div className="w-96 border-l border-border">
         <div className="sticky top-0 p-4 h-screen flex flex-col">
           <div className="mb-4">
-            <h2 className="text-lg font-medium">Preview</h2>
+            <h2 className="text-lg font-medium">Предварительный просмотр</h2>
             <p className="text-xs text-muted-foreground">
               {selectedDemo && selectedAvatar !== null 
-                ? "Use the layout controls to customize video display"
-                : "Select an avatar and demo to customize layout"}
+                ? "Используйте элементы управления макетом для настройки отображения видео"
+                : "Выберите аватар и демо для настройки макета"}
             </p>
           </div>
           
@@ -283,7 +283,7 @@ const ContentGenerator = () => {
               <div className="flex items-center justify-between p-2 bg-secondary/50 rounded-lg">
                 <div className="flex items-center">
                   <CreditCard className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm">Available Credits</span>
+                  <span className="text-sm">Доступные кредиты</span>
                 </div>
                 <span className="text-sm font-bold">{profile.credits || 0}</span>
               </div>
@@ -295,11 +295,11 @@ const ContentGenerator = () => {
               onClick={handleOpenAudioSelector}
             >
               <Music className="mr-2 h-4 w-4" />
-              {selectedSound ? selectedSound.name : "Select Audio"}
+              {selectedSound ? selectedSound.name : "Выбрать аудио"}
             </Button>
             {!selectedSound && (
               <div className="mb-2 text-xs text-center text-muted-foreground">
-                Choose audio for your UGC
+                Выберите аудио для вашего UGC
               </div>
             )}
             
@@ -311,12 +311,12 @@ const ContentGenerator = () => {
               {isGenerating ? (
                 <>
                   <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                  Generating...
+                  Генерация...
                 </>
               ) : (
                 <>
                   <Wand2 className="mr-2 h-5 w-5" />
-                  Generate UGC
+                  Создать UGC
                 </>
               )}
             </Button>

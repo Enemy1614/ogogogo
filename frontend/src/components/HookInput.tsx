@@ -53,7 +53,7 @@ const HookInput = ({ value, onChange, step, totalSteps }: HookInputProps) => {
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">
-          {step}. Hook <span className="text-muted-foreground font-normal">(catchy opener)</span>
+          {step}. Хук <span className="text-muted-foreground font-normal">(цепляющее начало)</span>
         </h3>
         <span className="text-sm text-muted-foreground">{step}/{totalSteps}</span>
       </div>

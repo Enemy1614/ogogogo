@@ -75,7 +75,7 @@ const DemoGrid = ({ selectedDemo, onSelectDemo, onAddDemo, step, totalSteps }: D
   return (
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">3. Demos</h3>
+        <h3 className="text-base font-medium">3. Демо</h3>
         <div className="flex items-center gap-2">
           {selectedDemo !== null && (
             <Button 
@@ -85,7 +85,7 @@ const DemoGrid = ({ selectedDemo, onSelectDemo, onAddDemo, step, totalSteps }: D
               className="text-xs h-7 px-2"
             >
               <X className="h-3.5 w-3.5 mr-1" />
-              Reset
+              Сбросить
             </Button>
           )}
           <span className="text-sm text-muted-foreground">{step}/{totalSteps}</span>
@@ -99,7 +99,7 @@ const DemoGrid = ({ selectedDemo, onSelectDemo, onAddDemo, step, totalSteps }: D
         >
           <div className="flex flex-col items-center text-muted-foreground">
             <Plus className="h-5 w-5 mb-1" />
-            <span className="text-xs">Add Demo</span>
+            <span className="text-xs">Добавить демо</span>
           </div>
         </div>
         
