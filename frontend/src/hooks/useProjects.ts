@@ -8,7 +8,7 @@ import { toast } from "sonner";
 type Project = Database["public"]["Tables"]["projects"]["Row"];
 type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
 type ProjectUpdate = Database["public"]["Tables"]["projects"]["Update"];
-type ProjectStatus = Database["public"]["Enums"]["project_status"];
+
 
 export const useProjects = () => {
   const { user } = useAuth();
@@ -89,7 +89,6 @@ export const useCreateProject = () => {
           ...projectData,
           user_id: user.id,
           status: "draft",
-          video_count: 0,
         })
         .select()
         .single();
@@ -127,7 +126,6 @@ export const useUpdateProject = () => {
         .from("projects")
         .update({
           ...updates,
-          updated_at: new Date().toISOString(),
         })
         .eq("id", id)
         .eq("user_id", user.id) // Ensure user can only update their own projects
@@ -221,4 +219,4 @@ export const useProject = (projectId: string | undefined) => {
 };
 
 // Export types for use in components
-export type { Project, ProjectInsert, ProjectUpdate, ProjectStatus };
+export type { Project, ProjectInsert, ProjectUpdate };

@@ -16,7 +16,7 @@ const ProjectWizard = () => {
         name: "Новый проект",
         description: "Описание проекта",
         target_audience: "Целевая аудитория",
-        tone: "professional",
+        tone_of_voice: "professional",
         status: "draft",
       });
       

@@ -11,12 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { useProjects, useDeleteProject, type Project, type ProjectStatus } from "@/hooks/useProjects";
+import { useProjects, useDeleteProject, type Project } from "@/hooks/useProjects";
 import { toast } from "sonner";
 
 
 
-const getStatusBadge = (status: ProjectStatus) => {
+const getStatusBadge = (status: string) => {
   switch (status) {
     case 'active':
       return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Активен</Badge>;
@@ -33,7 +33,7 @@ const getStatusBadge = (status: ProjectStatus) => {
   }
 };
 
-const getStatusIcon = (status: ProjectStatus) => {
+const getStatusIcon = (status: string) => {
   switch (status) {
     case 'active':
       return <Play className="w-4 h-4 text-green-600" />;
@@ -206,19 +206,9 @@ const Projects = () => {
                       
                       <div className="space-y-2 text-xs text-neutral-600">
                         <div className="flex justify-between">
-                          <span>Видео создано:</span>
-                          <span className="font-medium">{project.video_count}</span>
-                        </div>
-                        <div className="flex justify-between">
                           <span>Создан:</span>
                           <span>{formatDate(project.created_at)}</span>
                         </div>
-                        {project.last_generated && (
-                          <div className="flex justify-between">
-                            <span>Последнее видео:</span>
-                            <span>{formatDate(project.last_generated)}</span>
-                          </div>
-                        )}
                       </div>
                     </CardContent>
 

@@ -186,62 +186,50 @@ export type Database = {
         Row: {
           id: string
           created_at: string
-          updated_at: string
           user_id: string
           name: string
           description: string
           target_audience: string
-          tone: string
+          tone_of_voice: string
           price_category: string | null
           keywords: string | null
-          unique_proposition: string | null
-          call_to_action: string | null
-          website: string | null
-          status: Database["public"]["Enums"]["project_status"]
-          demo_id: number | null
-          sound_id: number | null
-          video_count: number
-          last_generated: string | null
+          usp: string | null
+          cta: string | null
+          website_url: string | null
+          status: string
+          hooks: string | null
         }
         Insert: {
           id?: string
           created_at?: string
-          updated_at?: string
           user_id: string
           name: string
           description: string
           target_audience: string
-          tone: string
+          tone_of_voice: string
           price_category?: string | null
           keywords?: string | null
-          unique_proposition?: string | null
-          call_to_action?: string | null
-          website?: string | null
-          status?: Database["public"]["Enums"]["project_status"]
-          demo_id?: number | null
-          sound_id?: number | null
-          video_count?: number
-          last_generated?: string | null
+          usp?: string | null
+          cta?: string | null
+          website_url?: string | null
+          status?: string
+          hooks?: string | null
         }
         Update: {
           id?: string
           created_at?: string
-          updated_at?: string
           user_id?: string
           name?: string
           description?: string
           target_audience?: string
-          tone?: string
+          tone_of_voice?: string
           price_category?: string | null
           keywords?: string | null
-          unique_proposition?: string | null
-          call_to_action?: string | null
-          website?: string | null
-          status?: Database["public"]["Enums"]["project_status"]
-          demo_id?: number | null
-          sound_id?: number | null
-          video_count?: number
-          last_generated?: string | null
+          usp?: string | null
+          cta?: string | null
+          website_url?: string | null
+          status?: string
+          hooks?: string | null
         }
         Relationships: [
           {
@@ -250,21 +238,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_demo_id_fkey"
-            columns: ["demo_id"]
-            isOneToOne: false
-            referencedRelation: "demo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_sound_id_fkey"
-            columns: ["sound_id"]
-            isOneToOne: false
-            referencedRelation: "sound"
-            referencedColumns: ["id"]
-          },
+          }
         ]
       }
       sound: {
@@ -327,7 +301,6 @@ export type Database = {
     }
     Enums: {
       plan: "free" | "pro" | "ultra"
-      project_status: "draft" | "active" | "generating" | "paused" | "completed"
       template_type: "aiavatar" | "game" | "usergenerated"
       text_alignment: "top" | "center" | "bottom"
       video_alignment: "side" | "top" | "serial"
