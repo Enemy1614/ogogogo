@@ -89,21 +89,21 @@ const Navbar = () => {
       </div>
       
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-        <NavItem icon={<Home size={18} />} label="AI UGC Avatars" to="/dashboard?tab=aiugc" active={currentTab === "aiugc"} />
-        <NavItem icon={<Film size={18} />} label="My Videos" to="/dashboard?tab=videos" active={currentTab === "videos"} />
-        <NavItem icon={<Grid size={18} />} label="Carousels" to="/dashboard?tab=carousels" active={currentTab === "carousels"} />
-        <NavItem icon={<Layers size={18} />} label="Memes" disabled={true} />
-        <NavItem icon={<Calendar size={18} />} label="Schedule" disabled={true} />
+        <NavItem icon={<Home size={18} />} label="AI UGC Аватары" to="/dashboard?tab=aiugc" active={currentTab === "aiugc"} />
+        <NavItem icon={<Film size={18} />} label="Мои видео" to="/dashboard?tab=videos" active={currentTab === "videos"} />
+        <NavItem icon={<Grid size={18} />} label="Карусели" to="/dashboard?tab=carousels" active={currentTab === "carousels"} />
+        <NavItem icon={<Layers size={18} />} label="Мемы" disabled={true} />
+        <NavItem icon={<Calendar size={18} />} label="Расписание" disabled={true} />
       </nav>
       
       <div className="border-t border-border p-4 space-y-1">
-        <NavItem icon={<HelpCircle size={18} />} label="Support" onClick={() => window.open("https://x.com/rushabtated4", "_blank", "noopener,noreferrer")} />
+        <NavItem icon={<HelpCircle size={18} />} label="Поддержка" onClick={() => window.open("https://x.com/rushabtated4", "_blank", "noopener,noreferrer")} />
         
         <Popover>
           <PopoverTrigger asChild>
             <div className={cn("flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer smooth-transition", "hover:bg-secondary text-foreground")}>
               <div className="w-5 h-5 shrink-0"><Settings size={18} /></div>
-              <span className="text-sm font-medium">Settings</span>
+              <span className="text-sm font-medium">Настройки</span>
             </div>
           </PopoverTrigger>
           <PopoverContent side="right" className="w-64 p-4">
@@ -135,7 +135,7 @@ const Navbar = () => {
             </div>
           </PopoverContent>
         </Popover>
-        <NavItem icon={<ExternalLink size={18} />} label="Self Host" to="/self-host" onClick={() => window.open("/self-host", "_blank", "noopener,noreferrer")} />
+        <NavItem icon={<ExternalLink size={18} />} label="Самостоятельный хостинг" to="/self-host" onClick={() => window.open("/self-host", "_blank", "noopener,noreferrer")} />
       </div>
       
       <div className="p-4 border-t border-border">
