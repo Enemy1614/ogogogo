@@ -298,7 +298,7 @@ const CarouselPreview = ({
             className="rounded-md"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            Предыдущий
           </Button>
           
           <Button
@@ -308,7 +308,7 @@ const CarouselPreview = ({
             disabled={currentSlideIndex === slides.length - 1}
             className="rounded-md"
           >
-            Next
+            Следующий
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>

@@ -24,7 +24,7 @@ const SlideManager = ({
         <h2 className="text-xl font-semibold">Slides</h2>
         <Button onClick={addSlide} size="sm">
           <Plus className="h-4 w-4 mr-1" />
-          Add Slide
+          Добавить слайд
         </Button>
       </div>
       

@@ -245,7 +245,7 @@ const AudioUploadDialog = ({ isOpen, onClose, onSuccess }: AudioUploadDialogProp
             onClick={handleCancel}
             disabled={isUploading}
           >
-            Cancel
+            Отменить
           </Button>
           <Button
             onClick={handleUpload}

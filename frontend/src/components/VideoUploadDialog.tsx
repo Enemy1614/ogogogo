@@ -237,16 +237,16 @@ const VideoUploadDialog = ({ isOpen, onClose, onSuccess }: VideoUploadDialogProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5 text-primary" />
-            <span>Upload Your Video</span>
+            <span>Загрузите ваше видео</span>
           </DialogTitle>
           <DialogDescription>
-            Upload an MP4 video to use as a template (max 10MB)
+            Загрузите видео чтобы оно было доступно всегда
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="video">Video File (MP4)</Label>
+            <Label htmlFor="video">Видео (MP4)</Label>
             {videoFile ? (
               <div className="relative flex items-center p-2 border rounded-md">
                 <div className="flex-1 truncate pr-2">
@@ -268,9 +268,9 @@ const VideoUploadDialog = ({ isOpen, onClose, onSuccess }: VideoUploadDialogProp
               <div className="flex items-center justify-center border border-dashed rounded-md py-4">
                 <label htmlFor="video-upload" className="cursor-pointer text-center px-4">
                   <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm font-medium">Click to select an MP4 video</p>
+                  <p className="text-sm font-medium">Нажмите чтобы выбрать видео</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Max size: 10MB
+                    Макс: 10MB
                   </p>
                   <input
                     type="file"
@@ -320,7 +320,7 @@ const VideoUploadDialog = ({ isOpen, onClose, onSuccess }: VideoUploadDialogProp
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Video
+                Загрузить
               </>
             )}
           </Button>
