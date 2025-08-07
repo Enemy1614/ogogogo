@@ -1,4 +1,4 @@
-import { Home, User, Image, Film, Calendar, BarChart2, HelpCircle, Settings, Layers, Grid, LogOut, CreditCard, ExternalLink } from "lucide-react";
+import { Home, User, Image, Film, Calendar, BarChart2, HelpCircle, Settings, Layers, Grid, LogOut, CreditCard, ExternalLink, Plus, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -55,6 +55,7 @@ const Navbar = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const currentTab = searchParams.get("tab") || "aiugc";
+  const isProjectsPage = location.pathname.startsWith("/projects");
   const {
     user,
     signOut
@@ -88,7 +89,18 @@ const Navbar = () => {
         </div>
       </div>
       
+      {/* Add Project Button */}
+      <div className="px-4 pb-4">
+        <Link to="/projects/new" className="w-full">
+          <Button className="w-full flex items-center gap-2 justify-center bg-neutral-900 hover:bg-neutral-800 text-white">
+            <Plus size={16} />
+            Добавить проект
+          </Button>
+        </Link>
+      </div>
+      
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+        <NavItem icon={<FolderOpen size={18} />} label="Мои проекты" to="/projects" active={isProjectsPage} />
         <NavItem icon={<Home size={18} />} label="AI UGC Аватары" to="/dashboard?tab=aiugc" active={currentTab === "aiugc"} />
         <NavItem icon={<Film size={18} />} label="Мои видео" to="/dashboard?tab=videos" active={currentTab === "videos"} />
         <NavItem icon={<Grid size={18} />} label="Карусели" to="/dashboard?tab=carousels" active={currentTab === "carousels"} />

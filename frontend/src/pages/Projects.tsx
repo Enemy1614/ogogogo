@@ -1,0 +1,244 @@
+import NavbarWrapper from "@/components/NavbarWrapper";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MoreHorizontal, Plus, Settings, Trash, Eye, Pause, Play } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
+
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  target_audience: string;
+  status: 'active' | 'generating' | 'draft' | 'paused';
+  created_at: string;
+  video_count: number;
+  last_generated: string | null;
+}
+
+// Mock data for now - will be replaced with real data from Supabase
+const mockProjects: Project[] = [
+  {
+    id: "1",
+    name: "Мебель для дома",
+    description: "Создаём видео о стильной мебели для современного дома",
+    target_audience: "Женщины 25-45 лет, интересующиеся дизайном интерьера",
+    status: "active",
+    created_at: "2024-01-15",
+    video_count: 24,
+    last_generated: "2024-01-20"
+  },
+  {
+    id: "2", 
+    name: "Фитнес-приложение",
+    description: "Промо-видео для мобильного фитнес-приложения",
+    target_audience: "Активные люди 20-35 лет, следящие за здоровьем",
+    status: "generating",
+    created_at: "2024-01-10",
+    video_count: 12,
+    last_generated: "2024-01-18"
+  },
+  {
+    id: "3",
+    name: "Кулинарные рецепты",
+    description: "Быстрые и простые рецепты для занятых людей",
+    target_audience: "Работающие родители 25-40 лет",
+    status: "draft",
+    created_at: "2024-01-08",
+    video_count: 0,
+    last_generated: null
+  }
+];
+
+const getStatusBadge = (status: Project['status']) => {
+  switch (status) {
+    case 'active':
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Активен</Badge>;
+    case 'generating':
+      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">В процессе генерации</Badge>;
+    case 'draft':
+      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Черновик</Badge>;
+    case 'paused':
+      return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Приостановлен</Badge>;
+    default:
+      return <Badge>Неизвестно</Badge>;
+  }
+};
+
+const getStatusIcon = (status: Project['status']) => {
+  switch (status) {
+    case 'active':
+      return <Play className="w-4 h-4 text-green-600" />;
+    case 'generating':
+      return <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />;
+    case 'draft':
+      return <Settings className="w-4 h-4 text-gray-600" />;
+    case 'paused':
+      return <Pause className="w-4 h-4 text-orange-600" />;
+    default:
+      return null;
+  }
+};
+
+const Projects = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCreateProject = () => {
+    navigate('/projects/new');
+  };
+
+  const handleEditProject = (projectId: string) => {
+    navigate(`/projects/${projectId}/edit`);
+  };
+
+  const handleViewProject = (projectId: string) => {
+    // Navigate to project details/dashboard
+    console.log('View project:', projectId);
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    // Show confirmation dialog and delete project
+    console.log('Delete project:', projectId);
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      <NavbarWrapper>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-neutral-900">Мои проекты</h1>
+                <p className="text-neutral-600 mt-1">
+                  Управляйте своими UGC кампаниями и отслеживайте прогресс
+                </p>
+              </div>
+              <Button 
+                onClick={handleCreateProject}
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Добавить проект
+              </Button>
+            </div>
+
+            {/* Projects Grid */}
+            {mockProjects.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
+                    <Plus className="w-8 h-8 text-neutral-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-neutral-900">Нет проектов</h3>
+                    <p className="text-neutral-600 mt-1">
+                      Создайте свой первый проект для автоматизации UGC контента
+                    </p>
+                  </div>
+                  <Button onClick={handleCreateProject}>
+                    Создать первый проект
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mockProjects.map((project) => (
+                  <Card key={project.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(project.status)}
+                          <CardTitle className="text-lg">{project.name}</CardTitle>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewProject(project.id)}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Просмотр
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditProject(project.id)}>
+                              <Settings className="w-4 h-4 mr-2" />
+                              Настройки
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteProject(project.id)}
+                              className="text-red-600"
+                            >
+                              <Trash className="w-4 h-4 mr-2" />
+                              Удалить
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        {getStatusBadge(project.status)}
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="pb-4">
+                      <CardDescription className="text-sm mb-3 line-clamp-2">
+                        {project.description}
+                      </CardDescription>
+                      
+                      <div className="space-y-2 text-xs text-neutral-600">
+                        <div className="flex justify-between">
+                          <span>Видео создано:</span>
+                          <span className="font-medium">{project.video_count}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Создан:</span>
+                          <span>{formatDate(project.created_at)}</span>
+                        </div>
+                        {project.last_generated && (
+                          <div className="flex justify-between">
+                            <span>Последнее видео:</span>
+                            <span>{formatDate(project.last_generated)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="pt-0">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => handleViewProject(project.id)}
+                      >
+                        Открыть проект
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+      </NavbarWrapper>
+    </div>
+  );
+};
+
+export default Projects;

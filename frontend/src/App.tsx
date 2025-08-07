@@ -10,6 +10,9 @@ import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import SelfHost from "./pages/SelfHost";
+import Projects from "./pages/Projects";
+import ProjectWizard from "./pages/ProjectWizard";
+import ProjectEdit from "./pages/ProjectEdit";
 import SelfHostBanner from "./components/SelfHostBanner";
 import { MobileWarningModal } from "./components/MobileWarningModal";
 
@@ -58,6 +61,30 @@ const App = () => {
                 element={
                   <ProtectedRoute requireAuth={false}>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/projects"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Projects />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/projects/new"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ProjectWizard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/projects/:id/edit"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ProjectEdit />
                   </ProtectedRoute>
                 }
               />

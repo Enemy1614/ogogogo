@@ -328,7 +328,7 @@ const CarouselPreview = ({
           className="w-full"
         >
           <Download className="h-4 w-4 mr-1" />
-          Download All Slides
+          Скачать все слайды
         </Button>
       </div>
     </div>
