@@ -37,16 +37,7 @@ const priceCategoryOptions = [
   { value: "luxury", label: "Люкс" },
 ];
 
-const mockHooks = [
-  "Вы не поверите, что произошло, когда я попробовал это...",
-  "Эта одна вещь изменила мою жизнь навсегда",
-  "Я думал, что это невозможно, пока не увидел это",
-  "Секрет, который скрывают от вас компании",
-  "Почему все говорят об этом продукте?",
-  "Это работает лучше, чем я ожидал",
-  "Результат за 30 дней превзошел все ожидания",
-  "Сначала я сомневался, но теперь я убежден",
-];
+
 
 const ProjectEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,9 +55,9 @@ const ProjectEdit = () => {
     call_to_action: "",
     website: "",
   });
-  const [selectedHooks, setSelectedHooks] = useState<string[]>([]);
   const [demoFile, setDemoFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [hookFiles, setHookFiles] = useState<File[]>([]);
 
   useEffect(() => {
     // If we have a project ID, we would load the project data here
@@ -99,13 +90,7 @@ const ProjectEdit = () => {
     toast.success("Фоновая музыка загружена");
   };
 
-  const handleHookToggle = (hook: string) => {
-    setSelectedHooks(prev => 
-      prev.includes(hook) 
-        ? prev.filter(h => h !== hook)
-        : [...prev, hook]
-    );
-  };
+
 
   const handleFinalize = () => {
     // Here we would save all data and start the generation process
@@ -131,10 +116,7 @@ const ProjectEdit = () => {
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-2">Загрузите демо-видео</h2>
               <p className="text-neutral-600">
-                Загрузите пример видео вашего продукта или услуги. Это поможет ИИ создать более точные видео.
-              </p>
-              <p className="text-sm text-neutral-500 mt-2">
-                Этот шаг необязательный - вы можете пропустить его и добавить видео позже.
+                Загрузите пример видео вашего продукта или услуги.
               </p>
             </div>
             
@@ -160,16 +142,6 @@ const ProjectEdit = () => {
                 </Button>
               </label>
             </div>
-            
-            <div className="text-center mt-6">
-              <Button 
-                variant="ghost" 
-                onClick={() => setCurrentStep(4)}
-                className="text-neutral-600 hover:text-neutral-900"
-              >
-                Пропустить все и перейти к хукам
-              </Button>
-            </div>
           </div>
         );
 
@@ -180,9 +152,6 @@ const ProjectEdit = () => {
               <h2 className="text-2xl font-bold mb-2">Добавьте фоновую музыку</h2>
               <p className="text-neutral-600">
                 Загрузите аудио файл, который будет использоваться как фоновая музыка для ваших видео.
-              </p>
-              <p className="text-sm text-neutral-500 mt-2">
-                Этот шаг необязательный - вы можете пропустить его и добавить музыку позже.
               </p>
             </div>
             
@@ -208,16 +177,6 @@ const ProjectEdit = () => {
                 </Button>
               </label>
             </div>
-            
-            <div className="text-center mt-6">
-              <Button 
-                variant="ghost" 
-                onClick={() => setCurrentStep(4)}
-                className="text-neutral-600 hover:text-neutral-900"
-              >
-                Пропустить и перейти к хукам
-              </Button>
-            </div>
           </div>
         );
 
@@ -225,47 +184,39 @@ const ProjectEdit = () => {
         return (
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Выберите хуки для видео</h2>
+              <h2 className="text-2xl font-bold mb-2">Загрузите видео-хуки</h2>
               <p className="text-neutral-600">
-                Выберите хуки, которые будут использоваться для привлечения внимания в ваших видео.
-              </p>
-              <p className="text-sm text-neutral-500 mt-2">
-                Если не выберете сейчас, ИИ сгенерирует хуки автоматически на основе описания продукта.
+                Загрузите видео-хуки, которые будут использоваться для привлечения внимания в ваших видео.
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-4">
-              {mockHooks.map((hook, index) => (
-                <Card 
-                  key={index}
-                  className={`cursor-pointer transition-all ${
-                    selectedHooks.includes(hook) 
-                      ? 'border-neutral-900 bg-neutral-50' 
-                      : 'hover:border-neutral-400'
-                  }`}
-                  onClick={() => handleHookToggle(hook)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center mt-1 ${
-                        selectedHooks.includes(hook) 
-                          ? 'bg-neutral-900 border-neutral-900' 
-                          : 'border-neutral-300'
-                      }`}>
-                        {selectedHooks.includes(hook) && (
-                          <span className="text-white text-xs">✓</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-neutral-700">{hook}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            <div className="text-center">
-              <p className="text-sm text-neutral-600 mb-4">
-                Выбрано хуков: {selectedHooks.length}
+            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
+              <Video className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
+              <p className="text-neutral-600 mb-4">Перетащите видео-хуки сюда или нажмите для выбора</p>
+              <input
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length > 0) {
+                    setHookFiles(files);
+                    toast.success(`Загружено ${files.length} видео-хуков`);
+                  }
+                }}
+                className="hidden"
+                id="hooks-upload"
+              />
+              <label htmlFor="hooks-upload">
+                <Button variant="outline" asChild>
+                  <span className="cursor-pointer">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Выбрать файлы
+                  </span>
+                </Button>
+              </label>
+              <p className="text-xs text-neutral-500 mt-3">
+                Можно выбрать несколько файлов
               </p>
             </div>
           </div>
@@ -409,38 +360,38 @@ const ProjectEdit = () => {
           {/* Navigation breadcrumb */}
           <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500 mb-8">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs">
-                ✓
+              <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
+                1
               </div>
-              <span>Новая кампания</span>
+              <span className="text-neutral-900">Новая кампания</span>
             </div>
             <div className="w-2 h-px bg-neutral-300"></div>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs">
-                ✓
+              <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
+                2
               </div>
-              <span>Продукт</span>
+              <span className="text-neutral-900">Продукт</span>
             </div>
             <div className="w-2 h-px bg-neutral-300"></div>
             <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 2 ? 'bg-neutral-900 text-white' : currentStep > 2 ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                {currentStep > 2 ? '✓' : '3'}
+              <div className={`w-6 h-6 ${currentStep === 2 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
+                3
               </div>
-              <span className={currentStep === 2 ? 'font-medium text-neutral-900' : ''}>Демо</span>
+              <span className={currentStep === 2 ? 'font-medium text-neutral-900' : currentStep > 2 ? 'text-neutral-900' : 'text-neutral-500'}>Демо</span>
             </div>
             <div className="w-2 h-px bg-neutral-300"></div>
             <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 3 ? 'bg-neutral-900 text-white' : currentStep > 3 ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                {currentStep > 3 ? '✓' : '4'}
+              <div className={`w-6 h-6 ${currentStep === 3 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
+                4
               </div>
-              <span className={currentStep === 3 ? 'font-medium text-neutral-900' : ''}>Музыка</span>
+              <span className={currentStep === 3 ? 'font-medium text-neutral-900' : currentStep > 3 ? 'text-neutral-900' : 'text-neutral-500'}>Музыка</span>
             </div>
             <div className="w-2 h-px bg-neutral-300"></div>
             <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 4 ? 'bg-neutral-900 text-white' : currentStep > 4 ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                {currentStep > 4 ? '✓' : '5'}
+              <div className={`w-6 h-6 ${currentStep === 4 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
+                5
               </div>
-              <span className={currentStep === 4 ? 'font-medium text-neutral-900' : ''}>Хуки</span>
+              <span className={currentStep === 4 ? 'font-medium text-neutral-900' : currentStep > 4 ? 'text-neutral-900' : 'text-neutral-500'}>Хуки</span>
             </div>
           </div>
 
@@ -467,7 +418,7 @@ const ProjectEdit = () => {
             </Button>
             
             <div className="text-sm text-neutral-500">
-              {currentStep}/5
+              {currentStep + 1}/5
             </div>
             
             {currentStep === 4 ? (
@@ -482,9 +433,7 @@ const ProjectEdit = () => {
                 onClick={() => setCurrentStep(currentStep + 1)}
                 className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
               >
-                {currentStep === 2 && !demoFile ? 'Пропустить' : 
-                 currentStep === 3 && !audioFile ? 'Пропустить' : 
-                 'Продолжить'}
+                Продолжить
                 <ArrowRight className="w-4 h-4" />
               </Button>
             )}

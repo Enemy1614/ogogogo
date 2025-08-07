@@ -23,39 +23,8 @@ interface Project {
   last_generated: string | null;
 }
 
-// Mock data for now - will be replaced with real data from Supabase
-const mockProjects: Project[] = [
-  {
-    id: "1",
-    name: "Мебель для дома",
-    description: "Создаём видео о стильной мебели для современного дома",
-    target_audience: "Женщины 25-45 лет, интересующиеся дизайном интерьера",
-    status: "active",
-    created_at: "2024-01-15",
-    video_count: 24,
-    last_generated: "2024-01-20"
-  },
-  {
-    id: "2", 
-    name: "Фитнес-приложение",
-    description: "Промо-видео для мобильного фитнес-приложения",
-    target_audience: "Активные люди 20-35 лет, следящие за здоровьем",
-    status: "generating",
-    created_at: "2024-01-10",
-    video_count: 12,
-    last_generated: "2024-01-18"
-  },
-  {
-    id: "3",
-    name: "Кулинарные рецепты",
-    description: "Быстрые и простые рецепты для занятых людей",
-    target_audience: "Работающие родители 25-40 лет",
-    status: "draft",
-    created_at: "2024-01-08",
-    video_count: 0,
-    last_generated: null
-  }
-];
+// Will be replaced with real data from Supabase
+const mockProjects: Project[] = [];
 
 const getStatusBadge = (status: Project['status']) => {
   switch (status) {
