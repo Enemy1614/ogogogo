@@ -36,21 +36,21 @@ const ProjectWizard = () => {
             <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
               3
             </div>
-            <span>UGC хуки</span>
+            <span>Демо</span>
           </div>
           <div className="w-2 h-px bg-neutral-300"></div>
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
               4
             </div>
-            <span>Демо</span>
+            <span>Музыка</span>
           </div>
           <div className="w-2 h-px bg-neutral-300"></div>
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
               5
             </div>
-            <span>Расписание</span>
+            <span>Хуки</span>
           </div>
         </div>
 

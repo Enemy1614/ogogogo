@@ -77,7 +77,7 @@ const ProjectEdit = () => {
   }, [id]);
 
   const handleProjectDetailsSubmit = () => {
-    if (!formData.name || !formData.description || !formData.target_audience || !formData.tone || !formData.price_category) {
+    if (!formData.name || !formData.description || !formData.target_audience || !formData.tone) {
       toast.error("Пожалуйста, заполните все обязательные поля");
       return;
     }
@@ -108,11 +108,6 @@ const ProjectEdit = () => {
   };
 
   const handleFinalize = () => {
-    if (selectedHooks.length === 0) {
-      toast.error("Выберите хотя бы один хук");
-      return;
-    }
-    
     // Here we would save all data and start the generation process
     toast.success("Проект создан! Начинаем генерацию видео...");
     navigate("/projects");
@@ -138,6 +133,9 @@ const ProjectEdit = () => {
               <p className="text-neutral-600">
                 Загрузите пример видео вашего продукта или услуги. Это поможет ИИ создать более точные видео.
               </p>
+              <p className="text-sm text-neutral-500 mt-2">
+                Этот шаг необязательный - вы можете пропустить его и добавить видео позже.
+              </p>
             </div>
             
             <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
@@ -162,6 +160,16 @@ const ProjectEdit = () => {
                 </Button>
               </label>
             </div>
+            
+            <div className="text-center mt-6">
+              <Button 
+                variant="ghost" 
+                onClick={() => setCurrentStep(4)}
+                className="text-neutral-600 hover:text-neutral-900"
+              >
+                Пропустить все и перейти к хукам
+              </Button>
+            </div>
           </div>
         );
 
@@ -172,6 +180,9 @@ const ProjectEdit = () => {
               <h2 className="text-2xl font-bold mb-2">Добавьте фоновую музыку</h2>
               <p className="text-neutral-600">
                 Загрузите аудио файл, который будет использоваться как фоновая музыка для ваших видео.
+              </p>
+              <p className="text-sm text-neutral-500 mt-2">
+                Этот шаг необязательный - вы можете пропустить его и добавить музыку позже.
               </p>
             </div>
             
@@ -197,6 +208,16 @@ const ProjectEdit = () => {
                 </Button>
               </label>
             </div>
+            
+            <div className="text-center mt-6">
+              <Button 
+                variant="ghost" 
+                onClick={() => setCurrentStep(4)}
+                className="text-neutral-600 hover:text-neutral-900"
+              >
+                Пропустить и перейти к хукам
+              </Button>
+            </div>
           </div>
         );
 
@@ -207,6 +228,9 @@ const ProjectEdit = () => {
               <h2 className="text-2xl font-bold mb-2">Выберите хуки для видео</h2>
               <p className="text-neutral-600">
                 Выберите хуки, которые будут использоваться для привлечения внимания в ваших видео.
+              </p>
+              <p className="text-sm text-neutral-500 mt-2">
+                Если не выберете сейчас, ИИ сгенерирует хуки автоматически на основе описания продукта.
               </p>
             </div>
             
@@ -311,7 +335,7 @@ const ProjectEdit = () => {
             </div>
 
             <div>
-              <Label htmlFor="price_category">Ценовая категория *</Label>
+              <Label htmlFor="price_category">Ценовая категория</Label>
               <Select value={formData.price_category} onValueChange={(value) => setFormData({ ...formData, price_category: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите ценовую категорию" />
@@ -402,21 +426,21 @@ const ProjectEdit = () => {
               <div className={`w-6 h-6 ${currentStep === 2 ? 'bg-neutral-900 text-white' : currentStep > 2 ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
                 {currentStep > 2 ? '✓' : '3'}
               </div>
-              <span className={currentStep === 2 ? 'font-medium text-neutral-900' : ''}>UGC хуки</span>
+              <span className={currentStep === 2 ? 'font-medium text-neutral-900' : ''}>Демо</span>
             </div>
             <div className="w-2 h-px bg-neutral-300"></div>
             <div className="flex items-center space-x-2">
               <div className={`w-6 h-6 ${currentStep === 3 ? 'bg-neutral-900 text-white' : currentStep > 3 ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
                 {currentStep > 3 ? '✓' : '4'}
               </div>
-              <span className={currentStep === 3 ? 'font-medium text-neutral-900' : ''}>Демо</span>
+              <span className={currentStep === 3 ? 'font-medium text-neutral-900' : ''}>Музыка</span>
             </div>
             <div className="w-2 h-px bg-neutral-300"></div>
             <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 4 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                5
+              <div className={`w-6 h-6 ${currentStep === 4 ? 'bg-neutral-900 text-white' : currentStep > 4 ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
+                {currentStep > 4 ? '✓' : '5'}
               </div>
-              <span className={currentStep === 4 ? 'font-medium text-neutral-900' : ''}>Расписание</span>
+              <span className={currentStep === 4 ? 'font-medium text-neutral-900' : ''}>Хуки</span>
             </div>
           </div>
 
@@ -450,7 +474,6 @@ const ProjectEdit = () => {
               <Button 
                 onClick={handleFinalize}
                 className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
-                disabled={selectedHooks.length === 0}
               >
                 Сохранить и начать создавать
               </Button>
@@ -458,12 +481,10 @@ const ProjectEdit = () => {
               <Button 
                 onClick={() => setCurrentStep(currentStep + 1)}
                 className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
-                disabled={
-                  (currentStep === 2 && !demoFile) || 
-                  (currentStep === 3 && !audioFile)
-                }
               >
-                Продолжить
+                {currentStep === 2 && !demoFile ? 'Пропустить' : 
+                 currentStep === 3 && !audioFile ? 'Пропустить' : 
+                 'Продолжить'}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             )}
