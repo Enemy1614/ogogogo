@@ -16,12 +16,12 @@ interface ProjectFormData {
   name: string;
   description: string;
   target_audience: string;
-  tone: string;
+  tone_of_voice: string;
   price_category: string;
   keywords: string;
-  unique_proposition: string;
-  call_to_action: string;
-  website: string;
+  usp: string;
+  cta: string;
+  website_url: string;
 }
 
 const toneOptions = [
@@ -57,12 +57,12 @@ const ProjectEdit = () => {
     name: "",
     description: "",
     target_audience: "",
-    tone: "",
+    tone_of_voice: "",
     price_category: "",
     keywords: "",
-    unique_proposition: "",
-    call_to_action: "",
-    website: "",
+    usp: "",
+    cta: "",
+    website_url: "",
   });
   const [demoFile, setDemoFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -75,12 +75,12 @@ const ProjectEdit = () => {
         name: project.name,
         description: project.description,
         target_audience: project.target_audience,
-        tone: project.tone,
+        tone_of_voice: project.tone_of_voice,
         price_category: project.price_category || "",
         keywords: project.keywords || "",
-        unique_proposition: project.unique_proposition || "",
-        call_to_action: project.call_to_action || "",
-        website: project.website || "",
+        usp: project.usp || "",
+        cta: project.cta || "",
+        website_url: project.website_url || "",
       });
       
       // If project is not a draft, start from step 2
@@ -92,7 +92,7 @@ const ProjectEdit = () => {
   }, [project]);
 
   const handleProjectDetailsSubmit = async () => {
-    if (!formData.name || !formData.description || !formData.target_audience || !formData.tone) {
+    if (!formData.name || !formData.description || !formData.target_audience || !formData.tone_of_voice) {
       toast.error("Пожалуйста, заполните все обязательные поля");
       return;
     }
@@ -337,8 +337,8 @@ const ProjectEdit = () => {
             </div>
 
             <div>
-              <Label htmlFor="tone">Тон общения *</Label>
-              <Select value={formData.tone} onValueChange={(value) => setFormData({ ...formData, tone: value })}>
+              <Label htmlFor="tone_of_voice">Тон общения *</Label>
+              <Select value={formData.tone_of_voice} onValueChange={(value) => setFormData({ ...formData, tone_of_voice: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите тон общения" />
                 </SelectTrigger>
@@ -379,32 +379,32 @@ const ProjectEdit = () => {
             </div>
 
             <div>
-              <Label htmlFor="unique_proposition">Уникальное предложение (необязательно)</Label>
+              <Label htmlFor="usp">Уникальное предложение (необязательно)</Label>
               <Textarea
-                id="unique_proposition"
-                value={formData.unique_proposition}
-                onChange={(e) => setFormData({ ...formData, unique_proposition: e.target.value })}
+                id="usp"
+                value={formData.usp}
+                onChange={(e) => setFormData({ ...formData, usp: e.target.value })}
                 placeholder="Что делает ваш продукт уникальным?"
                 rows={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="call_to_action">Призыв к действию (необязательно)</Label>
+              <Label htmlFor="cta">Призыв к действию (необязательно)</Label>
               <Input
-                id="call_to_action"
-                value={formData.call_to_action}
-                onChange={(e) => setFormData({ ...formData, call_to_action: e.target.value })}
+                id="cta"
+                value={formData.cta}
+                onChange={(e) => setFormData({ ...formData, cta: e.target.value })}
                 placeholder="Например: Закажите сейчас, Подпишитесь"
               />
             </div>
 
             <div>
-              <Label htmlFor="website">Сайт или соцсеть (необязательно)</Label>
+              <Label htmlFor="website_url">Сайт или соцсеть (необязательно)</Label>
               <Input
-                id="website"
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                id="website_url"
+                value={formData.website_url}
+                onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                 placeholder="https://example.com"
               />
             </div>
