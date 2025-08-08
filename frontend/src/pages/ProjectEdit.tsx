@@ -530,10 +530,9 @@ const ProjectEdit = () => {
                         return { url: publicUrl, name: file.name, size: file.size, type: 'hook' };
                       })
                     );
-                    // Merge and dedupe by url
-                    const newMerged = Array.from(
-                      new Map([...uploadedHooks, ...uploaded].map((h) => [h.url, h]))
-                    ).map(([, v]) => v);
+                    // Merge and dedupe by url. Only valid urls.
+                    const merged = [...uploadedHooks, ...uploaded].filter((h) => !!h.url);
+                    const newMerged = Array.from(new Map(merged.map((h) => [h.url, h]))).map(([, v]) => v);
                     setUploadedHooks(newMerged);
                     if (id) {
                       const urls = newMerged.map((h) => h.url);
@@ -565,21 +564,17 @@ const ProjectEdit = () => {
               {isUploadingHooks && (
                 <p className="text-xs text-neutral-500 mt-2">Загрузка...</p>
               )}
-              {uploadedHooks.length > 0 && (
+              {uploadedHooks.filter((v) => !!v.url).length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                  {uploadedHooks.map((h, itemIndex) => (
-                    <div key={itemIndex} className="relative group">
-                      <div className="w-full rounded-lg overflow-hidden">
-                        <video
-                          src={h.url}
-                          controls
-                          playsInline
-                          preload="metadata"
-                          poster="/placeholder.svg"
-                          className="w-full h-auto rounded-lg bg-neutral-100"
-                          style={{ aspectRatio: '9/16', objectFit: 'cover' }}
-                        />
-                      </div>
+                  {uploadedHooks.filter((v) => !!v.url).map((h, itemIndex) => (
+                    <div key={`${h.url}-${itemIndex}`} className="relative group">
+                      <video
+                        src={h.url}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="w-full rounded-lg"
+                      />
                       <button
                         aria-label="Удалить хук"
                         className="absolute -top-2 -right-2 z-10 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow pointer-events-auto"
