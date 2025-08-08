@@ -517,7 +517,7 @@ const ProjectEdit = () => {
                         playsInline
                         preload="metadata"
                         poster="/placeholder.svg"
-                        className="w-full rounded-lg aspect-video bg-neutral-100 object-cover"
+                        className="w-full rounded-lg aspect-[9/16] bg-neutral-100 object-cover"
                       />
                       <button
                         aria-label="Удалить хук"

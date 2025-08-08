@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, X, FileVideo } from "lucide-react";
+import { Upload, X, FileVideo, Video as VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -84,7 +84,9 @@ const HookUploader = ({ projectId, onUploaded }: HookUploaderProps) => {
 
   return (
     <div className="p-4 border border-border rounded-lg bg-card">
+      {/* Зона загрузки — стилизована как у демо */}
       <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
+        <VideoIcon className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
         <p className="text-neutral-600 mb-4">Перетащите видео-хуки сюда или нажмите для выбора (можно несколько)</p>
         <input id="hooks-input" type="file" accept="video/*" multiple onChange={handleSelectFiles} className="hidden" />
         <label htmlFor="hooks-input">
@@ -101,19 +103,20 @@ const HookUploader = ({ projectId, onUploaded }: HookUploaderProps) => {
         <div className="mt-4 space-y-3">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {files.map((f, i) => (
-              <div key={i} className="flex items-center gap-2 p-2 border rounded">
-                <div className="w-10 h-10 bg-secondary rounded flex items-center justify-center">
-                  <FileVideo size={18} />
+              <div key={i} className="p-2 border rounded">
+                <div className="text-xs mb-2 truncate" title={f.name}>{f.name}</div>
+                <div className="w-full rounded-lg overflow-hidden bg-neutral-100 aspect-[9/16] flex items-center justify-center">
+                  <FileVideo className="w-6 h-6 text-neutral-400" />
                 </div>
-                <div className="text-sm truncate">{f.name}</div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ml-auto"
-                  onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                >
-                  <X size={16} />
-                </Button>
+                <div className="flex justify-end mt-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
