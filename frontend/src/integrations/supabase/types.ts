@@ -241,6 +241,45 @@ export type Database = {
           }
         ]
       }
+      project_hooks: {
+        Row: {
+          id: number
+          created_at: string
+          hook_link: string
+          user_id: string
+          project_id: string
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          hook_link: string
+          user_id: string
+          project_id: string
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          hook_link?: string
+          user_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_hooks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_hooks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       sound: {
         Row: {
           created_at: string

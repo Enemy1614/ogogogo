@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import DemoUploader from "@/components/DemoUploader";
 import AudioUploadDialog from "@/components/AudioUploadDialog";
 import { supabase } from "@/integrations/supabase/client";
+import HookUploader from "@/components/HookUploader";
 
 interface ProjectFormData {
   name: string;
@@ -79,6 +80,7 @@ const ProjectEdit = () => {
   const [isLoadingSounds, setIsLoadingSounds] = useState(false);
   const [selectedSoundId, setSelectedSoundId] = useState<number | null>(null);
   const [uploadedHooks, setUploadedHooks] = useState<{ url: string; name: string; size: number; type: string }[]>([]);
+  const [projectHooks, setProjectHooks] = useState<{ id: number; hook_link: string }[]>([]);
 
   // Load project data when editing existing project
   useEffect(() => {
@@ -101,24 +103,7 @@ const ProjectEdit = () => {
         setCurrentStep(2);
       }
 
-      // Normalize existing hooks into UI shape
-      const existingHooks: any = (project as any).hooks;
-      let urls: string[] = [];
-      try {
-        const value = typeof existingHooks === 'string' ? JSON.parse(existingHooks) : existingHooks;
-        if (Array.isArray(value)) {
-          if (value.length > 0 && typeof value[0] === 'string') {
-            urls = value as string[];
-          } else if (value.length > 0 && typeof value[0] === 'object') {
-            urls = (value as any[]).map((v) => v?.url).filter(Boolean);
-          }
-        }
-      } catch (_) {
-        // ignore parse errors
-      }
-      // sanitize + dedupe
-      const unique = Array.from(new Set(urls.filter((u) => typeof u === 'string' && u.length > 0)));
-      setUploadedHooks(unique.map((u) => ({ url: u, name: '', size: 0, type: 'hook' })));
+      // Hooks now managed in project_hooks table. We'll fetch them below.
     }
   }, [project]);
 
@@ -136,6 +121,20 @@ const ProjectEdit = () => {
       setIsLoadingDemos(false);
     };
     fetchDemos();
+  }, [id]);
+
+  // Fetch project hooks when project id is available
+  useEffect(() => {
+    const fetchHooks = async () => {
+      if (!id) return;
+      const { data, error } = await supabase
+        .from("project_hooks")
+        .select("id, hook_link")
+        .eq("project_id", id)
+        .order("created_at", { ascending: false });
+      if (!error && data) setProjectHooks(data as any);
+    };
+    fetchHooks();
   }, [id]);
 
   // Fetch user sounds and preselect project's sound
@@ -492,109 +491,46 @@ const ProjectEdit = () => {
               </p>
             </div>
             
-            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
-              <Video className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
-              <p className="text-neutral-600 mb-4">Перетащите видео-хуки сюда или нажмите для выбора</p>
-              <input
-                type="file"
-                accept="video/*"
-                multiple
-                onChange={async (e) => {
-                  const files = Array.from(e.target.files || []);
-                  if (!files.length || !user) return;
-                  try {
-                    setIsUploadingHooks(true);
-                    const uploaded = await Promise.all(
-                      files.map(async (file) => {
-                        const ext = file.name.split('.').pop();
-                        const fileName = `hook_${Math.random().toString(36).slice(2)}_${Date.now()}.${ext}`;
-                        const filePath = `${user.id}/${fileName}`;
+            {/* Загрузка хуков через отдельный компонент, как у демо */}
+            {id && (
+              <HookUploader projectId={id} onUploaded={async () => {
+                const { data } = await supabase
+                  .from('project_hooks')
+                  .select('id, hook_link')
+                  .eq('project_id', id)
+                  .order('created_at', { ascending: false });
+                setProjectHooks((data as any) || []);
+              }} />
+            )}
 
-                        const { data: signed } = await supabase.storage
-                          .from('user-templates')
-                          .createSignedUploadUrl(filePath);
-                        if (!signed) throw new Error('Failed to get upload URL');
-
-                        await new Promise<void>((resolve, reject) => {
-                          const xhr = new XMLHttpRequest();
-                          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed ${xhr.status}`));
-                          xhr.onerror = () => reject(new Error('Network error'));
-                          xhr.open('PUT', signed.signedUrl);
-                          xhr.send(file);
-                        });
-
-                        const { data: { publicUrl } } = supabase.storage
-                          .from('user-templates')
-                          .getPublicUrl(filePath);
-
-                        return { url: publicUrl, name: file.name, size: file.size, type: 'hook' };
-                      })
-                    );
-                    // Merge and dedupe by url. Only valid urls.
-                    const merged = [...uploadedHooks, ...uploaded].filter((h) => !!h.url);
-                    const newMerged = Array.from(new Map(merged.map((h) => [h.url, h]))).map(([, v]) => v);
-                    setUploadedHooks(newMerged);
-                    if (id) {
-                      const urls = newMerged.map((h) => h.url);
-                      await updateProjectMutation.mutateAsync({ id, hooks: urls as any } as any);
-                    }
-                    toast.success(`Загружено ${uploaded.length} хуков`);
-                  } catch (err) {
-                    console.error(err);
-                    toast.error('Не удалось загрузить хуки');
-                  } finally {
-                    setIsUploadingHooks(false);
-                  }
-                }}
-                className="hidden"
-                id="hooks-upload"
-              />
-              <label htmlFor="hooks-upload">
-                <Button variant="outline" asChild>
-                  <span className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Выбрать файлы
-                  </span>
-                </Button>
-              </label>
-              <p className="text-xs text-neutral-500 mt-3">
-                Можно выбрать несколько файлов
-              </p>
-              {/* Сетка превью как у демо */}
-              {isUploadingHooks && (
-                <p className="text-xs text-neutral-500 mt-2">Загрузка...</p>
-              )}
-              {uploadedHooks.filter((v) => !!v.url).length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                  {uploadedHooks.filter((v) => !!v.url).map((h, itemIndex) => (
-                    <div key={`${h.url}-${itemIndex}`} className="relative group">
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-neutral-700 mb-3">Загруженные хуки</h3>
+              {projectHooks.length === 0 ? (
+                <div className="text-neutral-500 text-sm">Пока нет хуков</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {projectHooks.map((h) => (
+                    <div key={h.id} className="relative group">
                       <video
-                        src={h.url}
+                        src={h.hook_link}
                         controls
                         playsInline
                         preload="metadata"
-                        className="w-full rounded-lg"
+                        poster="/placeholder.svg"
+                        className="w-full rounded-lg aspect-video bg-neutral-100 object-cover"
                       />
                       <button
                         aria-label="Удалить хук"
-                        className="absolute -top-2 -right-2 z-10 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow pointer-events-auto"
-                        onClick={async (e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
+                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        onClick={async () => {
                           try {
-                            // Remove from storage
-                            const u = h.url;
-                            const pathIdx = u.indexOf('/user-templates/');
-                            if (pathIdx !== -1) {
-                              const path = u.substring(pathIdx + '/user-templates/'.length);
-                              await (supabase as any).storage.from('user-templates').remove([path]);
+                            await supabase.from('project_hooks').delete().eq('id', h.id);
+                            const idx = h.hook_link.indexOf('/user-templates/');
+                            if (idx !== -1) {
+                              const path = h.hook_link.substring(idx + '/user-templates/'.length);
+                              await supabase.storage.from('user-templates').remove([path]);
                             }
-                            const next = uploadedHooks.filter((_, i) => i !== itemIndex);
-                            setUploadedHooks(next);
-                            if (id) {
-                              const urls = next.map((x) => x.url);
-                              await updateProjectMutation.mutateAsync({ id, hooks: urls as any } as any);
-                            }
+                            setProjectHooks((prev) => prev.filter((x) => x.id !== h.id));
                             toast.success('Хук удалён');
                           } catch (err) {
                             console.error(err);
