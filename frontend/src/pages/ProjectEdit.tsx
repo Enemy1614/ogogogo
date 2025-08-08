@@ -238,7 +238,7 @@ const ProjectEdit = () => {
                         const ext = file.name.split('.').pop();
                         const fileName = `demo_${Math.random().toString(36).slice(2)}_${Date.now()}.${ext}`;
                         const filePath = `${user.id}/${fileName}`;
-                        const { data: signed } = await (supabase as any)
+                        const { data: signed } = await supabase.storage
                           .from('user-templates')
                           .createSignedUploadUrl(filePath);
                         if (!signed) throw new Error('Failed to get upload URL');
@@ -249,7 +249,7 @@ const ProjectEdit = () => {
                           xhr.open('PUT', signed.signedUrl);
                           xhr.send(file);
                         });
-                        const { data: { publicUrl } } = (supabase as any)
+                        const { data: { publicUrl } } = supabase.storage
                           .from('user-templates')
                           .getPublicUrl(filePath);
                         records.push({ demo_link: publicUrl, user_id: user.id, project_id: id });
@@ -360,7 +360,7 @@ const ProjectEdit = () => {
                       const ext = file.name.split('.').pop();
                       const fileName = `${Math.random().toString(36).slice(2)}_${Date.now()}.${ext}`;
                       const filePath = `${user.id}/${fileName}`;
-                      const { data: signed } = await (supabase as any)
+                      const { data: signed } = await supabase.storage
                         .from('user-templates')
                         .createSignedUploadUrl(filePath);
                       if (!signed) throw new Error('Failed to get upload URL');
@@ -371,7 +371,7 @@ const ProjectEdit = () => {
                         xhr.open('PUT', signed.signedUrl);
                         xhr.send(file);
                       });
-                      const { data: { publicUrl } } = (supabase as any)
+                      const { data: { publicUrl } } = supabase.storage
                         .from('user-templates')
                         .getPublicUrl(filePath);
                       const { data, error } = await (supabase as any)
