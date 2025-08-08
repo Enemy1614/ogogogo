@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, Upload, Music, Video, MessageSquare, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Upload, Music, Video, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useProject, useCreateProject, useUpdateProject, type Project } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
-import DemoUploader from "@/components/DemoUploader";
 import AudioUploadDialog from "@/components/AudioUploadDialog";
 import { supabase } from "@/integrations/supabase/client";
 import HookUploader from "@/components/HookUploader";
@@ -48,6 +45,7 @@ const priceCategoryOptions = [
 const ProjectEdit = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   
   // API hooks
@@ -56,7 +54,6 @@ const ProjectEdit = () => {
   const updateProjectMutation = useUpdateProject();
   
   const [currentStep, setCurrentStep] = useState(1);
-  const [isProjectDetailsOpen, setIsProjectDetailsOpen] = useState(true);
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
     description: "",
@@ -99,13 +96,20 @@ const ProjectEdit = () => {
       
       // If project is not a draft, start from step 2
       if (project.status !== 'draft') {
-        setIsProjectDetailsOpen(false);
         setCurrentStep(2);
       }
 
       // Hooks now managed in project_hooks table. We'll fetch them below.
     }
   }, [project]);
+
+  // Sync step from query param
+  useEffect(() => {
+    const stepParam = Number(searchParams.get('step'));
+    if (!Number.isNaN(stepParam) && stepParam >= 1 && stepParam <= 4) {
+      setCurrentStep(stepParam);
+    }
+  }, [searchParams]);
 
   // Fetch project demos when project id is available
   useEffect(() => {
@@ -171,11 +175,10 @@ const ProjectEdit = () => {
       } else {
         // Create new project
         const newProject = await createProjectMutation.mutateAsync(formData);
-        // Redirect to edit the newly created project
-        navigate(`/projects/${newProject.id}/edit`, { replace: true });
+        // Redirect to edit the newly created project and open step 2
+        navigate(`/projects/${newProject.id}/edit?step=2`, { replace: true });
       }
       
-      setIsProjectDetailsOpen(false);
       setCurrentStep(2);
     } catch (error) {
       console.error("Error saving project:", error);
@@ -566,258 +569,229 @@ const ProjectEdit = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Project Details Modal - Step 1 */}
-      <Dialog open={isProjectDetailsOpen} onOpenChange={() => {}}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Добавить проект</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="name">Название проекта *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Введите название проекта"
-              />
+      <div className="container mx-auto py-8 px-4">
+        {/* Navigation breadcrumb */}
+        <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500 mb-8">
+          {[
+            { display: 1, label: 'Продукт' as const, targetStep: 1 },
+            { display: 2, label: 'Демо' as const, targetStep: 2 },
+            { display: 3, label: 'Музыка' as const, targetStep: 3 },
+            { display: 4, label: 'Хуки' as const, targetStep: 4 },
+          ].map((item) => {
+            const isActive = currentStep === item.targetStep;
+            const handleClick = () => setCurrentStep(item.targetStep);
+            return (
+              <div key={item.display} className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}`}
+                  onClick={handleClick}
+                  aria-label={`Перейти к шагу ${item.label}`}
+                >
+                  {item.display}
+                </button>
+                <button
+                  type="button"
+                  className={`${isActive ? 'font-medium text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'}`}
+                  onClick={handleClick}
+                  aria-label={`Перейти к шагу ${item.label}`}
+                >
+                  {item.label}
+                </button>
             </div>
+            );
+          })}
+        </div>
 
-            <div>
-              <Label htmlFor="description">Описание *</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Будет использовано для генерации хуков и идей для видео. Чем больше деталей, тем лучше."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="target_audience">Целевая аудитория *</Label>
-              <Textarea
-                id="target_audience"
-                value={formData.target_audience}
-                onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
-                placeholder="Опишите портрет идеального клиента. ИИ будет формировать целевые действия, опираясь на это описание."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="tone_of_voice">Тон общения *</Label>
-              <Select value={formData.tone_of_voice} onValueChange={(value) => setFormData({ ...formData, tone_of_voice: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите тон общения" />
-                </SelectTrigger>
-                <SelectContent>
-                  {toneOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="price_category">Ценовая категория</Label>
-              <Select value={formData.price_category} onValueChange={(value) => setFormData({ ...formData, price_category: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите ценовую категорию" />
-                </SelectTrigger>
-                <SelectContent>
-                  {priceCategoryOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="keywords">Ключевые слова (необязательно)</Label>
-              <Input
-                id="keywords"
-                value={formData.keywords}
-                onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
-                placeholder="Введите ключевые слова через запятую"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="usp">Уникальное предложение (необязательно)</Label>
-              <Textarea
-                id="usp"
-                value={formData.usp}
-                onChange={(e) => setFormData({ ...formData, usp: e.target.value })}
-                placeholder="Что делает ваш продукт уникальным?"
-                rows={2}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="cta">Призыв к действию (необязательно)</Label>
-              <Input
-                id="cta"
-                value={formData.cta}
-                onChange={(e) => setFormData({ ...formData, cta: e.target.value })}
-                placeholder="Например: Закажите сейчас, Подпишитесь"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="website_url">Сайт или соцсеть (необязательно)</Label>
-              <Input
-                id="website_url"
-                value={formData.website_url}
-                onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button variant="outline" onClick={() => navigate("/projects")}>
-                Отмена
-              </Button>
-              <Button 
-                onClick={handleProjectDetailsSubmit}
-                disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
-              >
-                {(createProjectMutation.isPending || updateProjectMutation.isPending) && (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                )}
-                Продолжить
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Steps 2-4 */}
-      {!isProjectDetailsOpen && (
-        <div className="container mx-auto py-8 px-4">
-          {/* Navigation breadcrumb */}
-          <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500 mb-8">
-            {[
-              { display: 2, label: 'Продукт' as const },
-              { display: 3, label: 'Демо' as const, targetStep: 2 },
-              { display: 4, label: 'Музыка' as const, targetStep: 3 },
-              { display: 5, label: 'Хуки' as const, targetStep: 4 },
-            ].map((item) => {
-              const isActive = item.targetStep ? currentStep === item.targetStep : false;
-              const handleClick = () => {
-                if (item.label === 'Продукт') {
-                  setIsProjectDetailsOpen(true);
-                  return;
-                }
-                if (item.targetStep) setCurrentStep(item.targetStep);
-              };
-              return (
-                <div key={item.display} className="flex items-center space-x-2">
-                  <button
-                    type="button"
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}`}
-                    onClick={handleClick}
-                    aria-label={`Перейти к шагу ${item.label}`}
-                  >
-                    {item.display}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${isActive ? 'font-medium text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'}`}
-                    onClick={handleClick}
-                    aria-label={`Перейти к шагу ${item.label}`}
-                  >
-                    {item.label}
-                  </button>
+        {/* Step content */}
+        <div className="min-h-[60vh] flex items-center justify-center">
+          {currentStep === 1 ? (
+            <div className="max-w-2xl w-full space-y-6">
+              <div>
+                <Label htmlFor="name">Название проекта *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Введите название проекта"
+                />
               </div>
-              );
-            })}
-          </div>
 
-          {/* Step content */}
-          <div className="min-h-[60vh] flex items-center justify-center">
-            {renderStepContent()}
-          </div>
+              <div>
+                <Label htmlFor="description">Описание *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Будет использовано для генерации хуков и идей для видео. Чем больше деталей, тем лучше."
+                  rows={3}
+                />
+              </div>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-12 pt-8 border-t border-neutral-200 max-w-4xl mx-auto">
+              <div>
+                <Label htmlFor="target_audience">Целевая аудитория *</Label>
+                <Textarea
+                  id="target_audience"
+                  value={formData.target_audience}
+                  onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
+                  placeholder="Опишите портрет идеального клиента. ИИ будет формировать целевые действия, опираясь на это описание."
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="tone_of_voice">Тон общения *</Label>
+                <Select value={formData.tone_of_voice} onValueChange={(value) => setFormData({ ...formData, tone_of_voice: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите тон общения" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {toneOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="price_category">Ценовая категория</Label>
+                <Select value={formData.price_category} onValueChange={(value) => setFormData({ ...formData, price_category: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите ценовую категорию" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {priceCategoryOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="keywords">Ключевые слова (необязательно)</Label>
+                <Input
+                  id="keywords"
+                  value={formData.keywords}
+                  onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                  placeholder="Введите ключевые слова через запятую"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="usp">Уникальное предложение (необязательно)</Label>
+                <Textarea
+                  id="usp"
+                  value={formData.usp}
+                  onChange={(e) => setFormData({ ...formData, usp: e.target.value })}
+                  placeholder="Что делает ваш продукт уникальным?"
+                  rows={2}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="cta">Призыв к действию (необязательно)</Label>
+                <Input
+                  id="cta"
+                  value={formData.cta}
+                  onChange={(e) => setFormData({ ...formData, cta: e.target.value })}
+                  placeholder="Например: Закажите сейчас, Подпишитесь"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="website_url">Сайт или соцсеть (необязательно)</Label>
+                <Input
+                  id="website_url"
+                  value={formData.website_url}
+                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                  placeholder="https://example.com"
+                />
+              </div>
+            </div>
+          ) : (
+            renderStepContent()
+          )}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-12 pt-8 border-t border-neutral-200 max-w-4xl mx-auto">
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              if (currentStep > 1) {
+                setCurrentStep(currentStep - 1);
+              } else {
+                navigate("/projects");
+              }
+            }}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Назад
+          </Button>
+          
+          <div className="text-sm text-neutral-500">
+            {currentStep}/4
+          </div>
+          
+          {currentStep === 4 ? (
             <Button 
-              variant="ghost" 
-              onClick={() => {
-                if (currentStep > 2) {
-                  setCurrentStep(currentStep - 1);
-                } else {
-                  navigate("/projects");
+              onClick={async () => {
+                if (!id) return;
+                try {
+                  const updates: any = {};
+                  if (uploadedHooks.length > 0) updates.hooks = uploadedHooks as any;
+                  if (selectedSoundId) updates.sound_id = selectedSoundId as any;
+                  if (Object.keys(updates).length > 0) {
+                    await updateProjectMutation.mutateAsync({ id, ...updates } as any);
+                  }
+                  await handleFinalize();
+                } catch (e) {
+                  console.error(e);
+                  toast.error('Не удалось сохранить данные проекта');
                 }
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
+              disabled={updateProjectMutation.isPending || isUploadingHooks}
             >
-              <ArrowLeft className="w-4 h-4" />
-              Назад
+              {updateProjectMutation.isPending && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
+              Сохранить и начать создавать
             </Button>
-            
-            <div className="text-sm text-neutral-500">
-              {currentStep + 1}/5
-            </div>
-            
-            {currentStep === 4 ? (
-              <Button 
-                onClick={async () => {
-                  if (!id) return;
-                  try {
-                    // Persist hooks and selected sound before starting
-                    const updates: any = {};
-                    if (uploadedHooks.length > 0) updates.hooks = uploadedHooks as any;
-                    if (selectedSoundId) updates.sound_id = selectedSoundId as any;
-                    if (Object.keys(updates).length > 0) {
-                      await updateProjectMutation.mutateAsync({ id, ...updates } as any);
-                    }
-                    await handleFinalize();
-                  } catch (e) {
-                    console.error(e);
-                    toast.error('Не удалось сохранить данные проекта');
+          ) : (
+            <Button 
+              onClick={async () => {
+                if (currentStep === 1) {
+                  await handleProjectDetailsSubmit();
+                  return;
+                }
+                if (!id) {
+                  setCurrentStep(currentStep + 1);
+                  return;
+                }
+                try {
+                  if (currentStep === 3 && selectedSoundId) {
+                    await updateProjectMutation.mutateAsync({ id, sound_id: selectedSoundId } as any);
                   }
-                }}
-                className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
-                disabled={updateProjectMutation.isPending || isUploadingHooks}
-              >
-                {updateProjectMutation.isPending && (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                )}
-                Сохранить и начать создавать
-              </Button>
-            ) : (
-              <Button 
-                onClick={async () => {
-                  // Persist selection/progress between steps
-                  if (!id) {
-                    setCurrentStep(currentStep + 1);
-                    return;
-                  }
-                  try {
-                    if (currentStep === 3 && selectedSoundId) {
-                      await updateProjectMutation.mutateAsync({ id, sound_id: selectedSoundId } as any);
-                    }
-                  } catch (e) {
-                    console.error(e);
-                  } finally {
-                    setCurrentStep(currentStep + 1);
-                  }
-                }}
-                className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
-              >
-                Продолжить
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+                } catch (e) {
+                  console.error(e);
+                } finally {
+                  setCurrentStep(currentStep + 1);
+                }
+              }}
+              className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
+            >
+              Продолжить
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
