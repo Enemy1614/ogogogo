@@ -11,6 +11,9 @@ import { ArrowLeft, ArrowRight, Upload, Music, Video, MessageSquare, Loader2 } f
 import { toast } from "sonner";
 import { useProject, useCreateProject, useUpdateProject, type Project } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
+import DemoUploader from "@/components/DemoUploader";
+import AudioUploadDialog from "@/components/AudioUploadDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectFormData {
   name: string;
@@ -67,6 +70,8 @@ const ProjectEdit = () => {
   const [demoFile, setDemoFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [hookFiles, setHookFiles] = useState<File[]>([]);
+  const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
+  const [isUploadingHooks, setIsUploadingHooks] = useState(false);
 
   // Load project data when editing existing project
   useEffect(() => {
@@ -174,29 +179,14 @@ const ProjectEdit = () => {
                 Загрузите пример видео вашего продукта или услуги.
               </p>
             </div>
-            
-            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
-              <Video className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
-              <p className="text-neutral-600 mb-4">Перетащите видео сюда или нажмите для выбора</p>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleDemoUpload(file);
-                }}
-                className="hidden"
-                id="demo-upload"
-              />
-              <label htmlFor="demo-upload">
-                <Button variant="outline" asChild>
-                  <span className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Выбрать файл
-                  </span>
-                </Button>
-              </label>
-            </div>
+            <DemoUploader
+              onCancel={() => navigate("/projects")}
+              onSuccess={() => {
+                toast.success("Демо видео загружено");
+                setCurrentStep(3);
+              }}
+              projectId={id}
+            />
           </div>
         );
 
@@ -210,28 +200,27 @@ const ProjectEdit = () => {
               </p>
             </div>
             
-            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
-              <Music className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
-              <p className="text-neutral-600 mb-4">Перетащите аудио файл сюда или нажмите для выбора</p>
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleAudioUpload(file);
-                }}
-                className="hidden"
-                id="audio-upload"
-              />
-              <label htmlFor="audio-upload">
-                <Button variant="outline" asChild>
-                  <span className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Выбрать файл
-                  </span>
-                </Button>
-              </label>
+            <div className="flex justify-center">
+              <Button variant="outline" className="gap-2" onClick={() => setIsAudioDialogOpen(true)}>
+                <Upload className="w-4 h-4" /> Загрузить аудио
+              </Button>
             </div>
+            <AudioUploadDialog
+              isOpen={isAudioDialogOpen}
+              onClose={() => setIsAudioDialogOpen(false)}
+              onSuccess={async (soundId) => {
+                if (!id) return;
+                try {
+                  await updateProjectMutation.mutateAsync({ id, sound_id: soundId } as any);
+                  toast.success("Музыка добавлена к проекту");
+                  setIsAudioDialogOpen(false);
+                  setCurrentStep(4);
+                } catch (e) {
+                  console.error(e);
+                  toast.error("Не удалось сохранить музыку в проекте");
+                }
+              }}
+            />
           </div>
         );
 
@@ -252,11 +241,45 @@ const ProjectEdit = () => {
                 type="file"
                 accept="video/*"
                 multiple
-                onChange={(e) => {
+                onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
-                  if (files.length > 0) {
-                    setHookFiles(files);
-                    toast.success(`Загружено ${files.length} видео-хуков`);
+                  if (!files.length || !id || !user) return;
+                  try {
+                    setIsUploadingHooks(true);
+                    const uploaded = await Promise.all(
+                      files.map(async (file) => {
+                        const ext = file.name.split('.').pop();
+                        const fileName = `hook_${Math.random().toString(36).slice(2)}_${Date.now()}.${ext}`;
+                        const filePath = `${user.id}/${fileName}`;
+
+                        const { data: signed } = await supabase.storage
+                          .from('user-templates')
+                          .createSignedUploadUrl(filePath);
+                        if (!signed) throw new Error('Failed to get upload URL');
+
+                        await new Promise<void>((resolve, reject) => {
+                          const xhr = new XMLHttpRequest();
+                          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed ${xhr.status}`));
+                          xhr.onerror = () => reject(new Error('Network error'));
+                          xhr.open('PUT', signed.signedUrl);
+                          xhr.send(file);
+                        });
+
+                        const { data: { publicUrl } } = supabase.storage
+                          .from('user-templates')
+                          .getPublicUrl(filePath);
+
+                        return { url: publicUrl, name: file.name, size: file.size, type: 'hook' };
+                      })
+                    );
+
+                    await updateProjectMutation.mutateAsync({ id, hooks: uploaded as any } as any);
+                    toast.success(`Загружено ${uploaded.length} хуков`);
+                  } catch (err) {
+                    console.error(err);
+                    toast.error('Не удалось загрузить хуки');
+                  } finally {
+                    setIsUploadingHooks(false);
                   }
                 }}
                 className="hidden"
@@ -273,6 +296,9 @@ const ProjectEdit = () => {
               <p className="text-xs text-neutral-500 mt-3">
                 Можно выбрать несколько файлов
               </p>
+              {isUploadingHooks && (
+                <p className="text-xs text-neutral-500 mt-2">Загрузка...</p>
+              )}
             </div>
           </div>
         );

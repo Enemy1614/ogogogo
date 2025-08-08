@@ -10,9 +10,10 @@ import { Progress } from "@/components/ui/progress";
 interface DemoUploaderProps {
   onSuccess: (demoId: number) => void;
   onCancel: () => void;
+  projectId?: string; // Optional project linkage
 }
 
-const DemoUploader = ({ onSuccess, onCancel }: DemoUploaderProps) => {
+const DemoUploader = ({ onSuccess, onCancel, projectId }: DemoUploaderProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -102,6 +103,7 @@ const DemoUploader = ({ onSuccess, onCancel }: DemoUploaderProps) => {
           { 
             demo_link: publicUrl,
             user_id: user.id,
+            project_id: projectId ?? null,
           }
         ])
         .select();

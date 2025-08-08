@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 interface AudioUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (soundId: number) => void; // Return created sound id
 }
 
 const AudioUploadDialog = ({ isOpen, onClose, onSuccess }: AudioUploadDialogProps) => {
@@ -134,13 +134,15 @@ const AudioUploadDialog = ({ isOpen, onClose, onSuccess }: AudioUploadDialogProp
         .getPublicUrl(filePath);
       
       // Save the sound information to the database with the user-entered name
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('sound')
         .insert({
           name: audioName.trim(),
           sound_link: audioUrl.publicUrl,
           user_id: user.id
-        });
+        })
+        .select('id')
+        .single();
       
       if (error) {
         throw error;
@@ -148,7 +150,7 @@ const AudioUploadDialog = ({ isOpen, onClose, onSuccess }: AudioUploadDialogProp
       
       toast.success('Audio uploaded successfully');
       resetForm();
-      onSuccess();
+      onSuccess(data.id);
       onClose();
     } catch (error: any) {
       console.error('Error uploading audio:', error);

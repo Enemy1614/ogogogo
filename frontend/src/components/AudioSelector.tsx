@@ -101,7 +101,7 @@ const AudioSelector = ({ isOpen, onClose, onSelect }: AudioSelectorProps) => {
     onClose();
   };
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (_soundId: number) => {
     refetch();
   };
 
