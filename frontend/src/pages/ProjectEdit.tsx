@@ -103,20 +103,22 @@ const ProjectEdit = () => {
 
       // Normalize existing hooks into UI shape
       const existingHooks: any = (project as any).hooks;
-      let normalizedHooks: { url: string; name: string; size: number; type: string }[] = [];
+      let urls: string[] = [];
       try {
         const value = typeof existingHooks === 'string' ? JSON.parse(existingHooks) : existingHooks;
         if (Array.isArray(value)) {
           if (value.length > 0 && typeof value[0] === 'string') {
-            normalizedHooks = (value as string[]).map((u) => ({ url: u, name: '', size: 0, type: 'hook' }));
+            urls = value as string[];
           } else if (value.length > 0 && typeof value[0] === 'object') {
-            normalizedHooks = value as any;
+            urls = (value as any[]).map((v) => v?.url).filter(Boolean);
           }
         }
       } catch (_) {
         // ignore parse errors
       }
-      setUploadedHooks(normalizedHooks);
+      // sanitize + dedupe
+      const unique = Array.from(new Set(urls.filter((u) => typeof u === 'string' && u.length > 0)));
+      setUploadedHooks(unique.map((u) => ({ url: u, name: '', size: 0, type: 'hook' })));
     }
   }, [project]);
 
@@ -528,7 +530,10 @@ const ProjectEdit = () => {
                         return { url: publicUrl, name: file.name, size: file.size, type: 'hook' };
                       })
                     );
-                    const newMerged = [...uploadedHooks, ...uploaded];
+                    // Merge and dedupe by url
+                    const newMerged = Array.from(
+                      new Map([...uploadedHooks, ...uploaded].map((h) => [h.url, h]))
+                    ).map(([, v]) => v);
                     setUploadedHooks(newMerged);
                     if (id) {
                       const urls = newMerged.map((h) => h.url);
@@ -564,14 +569,17 @@ const ProjectEdit = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                   {uploadedHooks.map((h, itemIndex) => (
                     <div key={itemIndex} className="relative group">
-                      <video
-                        src={h.url}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        poster="/placeholder.svg"
-                        className="w-full rounded-lg aspect-video bg-neutral-100 object-cover"
-                      />
+                      <div className="w-full rounded-lg overflow-hidden">
+                        <video
+                          src={h.url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          poster="/placeholder.svg"
+                          className="w-full h-auto rounded-lg bg-neutral-100"
+                          style={{ aspectRatio: '9/16', objectFit: 'cover' }}
+                        />
+                      </div>
                       <button
                         aria-label="Удалить хук"
                         className="absolute -top-2 -right-2 z-10 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow pointer-events-auto"
