@@ -135,13 +135,7 @@ const ProjectEdit = () => {
     fetchSounds();
   }, [user]);
 
-  useEffect(() => {
-    if (!project) return;
-    const candidate = (project as any).sound_id;
-    if (candidate !== undefined && candidate !== null) {
-      setSelectedSoundId(Number(candidate));
-    }
-  }, [project?.id]);
+  // (Selection removed by design for this step)
 
   const handleProjectDetailsSubmit = async () => {
     if (!formData.name || !formData.description || !formData.target_audience || !formData.tone_of_voice) {
@@ -348,10 +342,66 @@ const ProjectEdit = () => {
               </p>
             </div>
             
-            <div className="flex justify-center gap-3">
-              <Button variant="outline" className="gap-2" onClick={() => setIsAudioDialogOpen(true)}>
-                <Upload className="w-4 h-4" /> Загрузить аудио
-              </Button>
+            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
+              <Music className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
+              <p className="text-neutral-600 mb-4">Перетащите аудио сюда или нажмите для выбора (можно несколько)</p>
+              <input
+                type="file"
+                accept="audio/*"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (!files.length || !user) return;
+                  try {
+                    setIsLoadingSounds(true);
+                    const uploaded: { id: number; name: string; sound_link: string }[] = [];
+                    // Upload sequentially to keep it simple
+                    for (const file of files) {
+                      const ext = file.name.split('.').pop();
+                      const fileName = `${Math.random().toString(36).slice(2)}_${Date.now()}.${ext}`;
+                      const filePath = `${user.id}/${fileName}`;
+                      const { data: signed } = await (supabase as any)
+                        .from('user-templates')
+                        .createSignedUploadUrl(filePath);
+                      if (!signed) throw new Error('Failed to get upload URL');
+                      await new Promise<void>((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed ${xhr.status}`));
+                        xhr.onerror = () => reject(new Error('Network error'));
+                        xhr.open('PUT', signed.signedUrl);
+                        xhr.send(file);
+                      });
+                      const { data: { publicUrl } } = (supabase as any)
+                        .from('user-templates')
+                        .getPublicUrl(filePath);
+                      const { data, error } = await (supabase as any)
+                        .from('sound')
+                        .insert({ name: file.name, sound_link: publicUrl, user_id: user.id })
+                        .select('id, name, sound_link')
+                        .single();
+                      if (error) throw error;
+                      uploaded.push(data);
+                    }
+                    setUserSounds((prev) => [...uploaded, ...prev]);
+                    toast.success(`Загружено аудио: ${uploaded.length}`);
+                  } catch (err) {
+                    console.error(err);
+                    toast.error('Не удалось загрузить аудио');
+                  } finally {
+                    setIsLoadingSounds(false);
+                  }
+                }}
+                className="hidden"
+                id="audio-multi-upload"
+              />
+              <label htmlFor="audio-multi-upload">
+                <Button variant="outline" asChild>
+                  <span className="cursor-pointer">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Выбрать файлы
+                  </span>
+                </Button>
+              </label>
             </div>
 
             <div className="mt-6">
@@ -363,14 +413,32 @@ const ProjectEdit = () => {
               ) : (
                 <div className="grid sm:grid-cols-2 gap-3">
                   {userSounds.map((s) => (
-                    <div key={s.id} className={`p-3 border rounded-lg flex items-center justify-between ${selectedSoundId === s.id ? 'border-neutral-900' : 'border-neutral-200'}`}>
-                      <div>
+                    <div key={s.id} className="p-3 border border-neutral-200 rounded-lg">
+                      <div className="flex items-start justify-between">
                         <div className="text-sm font-medium">{s.name}</div>
-                        <audio className="mt-1" src={s.sound_link} controls />
+                        <button
+                          aria-label="Удалить аудио"
+                          className="ml-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                          onClick={async () => {
+                            try {
+                              await (supabase as any).from('sound').delete().eq('id', s.id);
+                              const idx = s.sound_link.indexOf('/user-templates/');
+                              if (idx !== -1) {
+                                const path = s.sound_link.substring(idx + '/user-templates/'.length);
+                                await (supabase as any).storage.from('user-templates').remove([path]);
+                              }
+                              setUserSounds((prev) => prev.filter((x) => x.id !== s.id));
+                              toast.success('Аудио удалено');
+                            } catch (err) {
+                              console.error(err);
+                              toast.error('Не удалось удалить аудио');
+                            }
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
-                      <Button size="sm" variant={selectedSoundId === s.id ? 'default' : 'outline'} onClick={() => setSelectedSoundId(s.id)}>
-                        {selectedSoundId === s.id ? 'Выбрано' : 'Выбрать'}
-                      </Button>
+                      <audio className="mt-2 w-full" src={s.sound_link} controls />
                     </div>
                   ))}
                 </div>
@@ -472,7 +540,31 @@ const ProjectEdit = () => {
               {uploadedHooks.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                   {uploadedHooks.map((h, idx) => (
-                    <video key={idx} src={h.url} controls className="w-full rounded-lg" />
+                    <div key={idx} className="relative group">
+                      <video src={h.url} controls className="w-full rounded-lg" />
+                      <button
+                        aria-label="Удалить хук"
+                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        onClick={async () => {
+                          try {
+                            // Remove from storage
+                            const u = h.url;
+                            const idx = u.indexOf('/user-templates/');
+                            if (idx !== -1) {
+                              const path = u.substring(idx + '/user-templates/'.length);
+                              await (supabase as any).storage.from('user-templates').remove([path]);
+                            }
+                            setUploadedHooks((prev) => prev.filter((_, i) => i !== idx));
+                            toast.success('Хук удалён');
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Не удалось удалить хук');
+                          }
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -667,7 +759,7 @@ const ProjectEdit = () => {
                   >
                     {item.label}
                   </button>
-                </div>
+              </div>
               );
             })}
           </div>
