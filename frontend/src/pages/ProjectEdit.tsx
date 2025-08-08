@@ -556,6 +556,7 @@ const ProjectEdit = () => {
               <p className="text-xs text-neutral-500 mt-3">
                 Можно выбрать несколько файлов
               </p>
+              {/* Сетка превью как у демо */}
               {isUploadingHooks && (
                 <p className="text-xs text-neutral-500 mt-2">Загрузка...</p>
               )}
@@ -573,8 +574,10 @@ const ProjectEdit = () => {
                       />
                       <button
                         aria-label="Удалить хук"
-                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                        onClick={async () => {
+                        className="absolute -top-2 -right-2 z-10 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow pointer-events-auto"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           try {
                             // Remove from storage
                             const u = h.url;
