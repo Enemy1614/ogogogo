@@ -561,9 +561,16 @@ const ProjectEdit = () => {
               )}
               {uploadedHooks.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                  {uploadedHooks.map((h, idx) => (
-                    <div key={idx} className="relative group">
-                      <video src={h.url} controls className="w-full rounded-lg" />
+                  {uploadedHooks.map((h, itemIndex) => (
+                    <div key={itemIndex} className="relative group">
+                      <video
+                        src={h.url}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        poster="/placeholder.svg"
+                        className="w-full rounded-lg aspect-video bg-neutral-100 object-cover"
+                      />
                       <button
                         aria-label="Удалить хук"
                         className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
@@ -571,12 +578,12 @@ const ProjectEdit = () => {
                           try {
                             // Remove from storage
                             const u = h.url;
-                            const idx = u.indexOf('/user-templates/');
-                            if (idx !== -1) {
-                              const path = u.substring(idx + '/user-templates/'.length);
+                            const pathIdx = u.indexOf('/user-templates/');
+                            if (pathIdx !== -1) {
+                              const path = u.substring(pathIdx + '/user-templates/'.length);
                               await (supabase as any).storage.from('user-templates').remove([path]);
                             }
-                            const next = uploadedHooks.filter((_, i) => i !== idx);
+                            const next = uploadedHooks.filter((_, i) => i !== itemIndex);
                             setUploadedHooks(next);
                             if (id) {
                               const urls = next.map((x) => x.url);
