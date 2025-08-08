@@ -74,6 +74,7 @@ const ProjectEdit = () => {
   const [isUploadingHooks, setIsUploadingHooks] = useState(false);
   const [projectDemos, setProjectDemos] = useState<{ id: number; demo_link: string }[]>([]);
   const [isLoadingDemos, setIsLoadingDemos] = useState(false);
+  const [isUploadingDemos, setIsUploadingDemos] = useState(false);
   const [userSounds, setUserSounds] = useState<{ id: number; name: string; sound_link: string }[]>([]);
   const [isLoadingSounds, setIsLoadingSounds] = useState(false);
   const [selectedSoundId, setSelectedSoundId] = useState<number | null>(null);
@@ -225,20 +226,75 @@ const ProjectEdit = () => {
                 Загрузите пример видео вашего продукта или услуги.
               </p>
             </div>
-            <DemoUploader
-              onCancel={() => {}}
-              onSuccess={async () => {
-                // Stay on step; refresh list
-                if (!id) return;
-                const { data } = await (supabase as any)
-                  .from("demo")
-                  .select("id, demo_link")
-                  .eq("project_id", id)
-                  .order("created_at", { ascending: false });
-                setProjectDemos((data as any) || []);
-              }}
-              projectId={id}
-            />
+            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
+              <Video className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
+              <p className="text-neutral-600 mb-4">Перетащите видео сюда или нажмите для выбора (можно несколько)</p>
+              <input
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (!files.length || !user || !id) return;
+                  try {
+                    setIsUploadingDemos(true);
+                    const records: { demo_link: string; user_id: string; project_id: string }[] = [];
+                    await Promise.all(
+                      files.map(async (file) => {
+                        const ext = file.name.split('.').pop();
+                        const fileName = `demo_${Math.random().toString(36).slice(2)}_${Date.now()}.${ext}`;
+                        const filePath = `${user.id}/${fileName}`;
+                        const { data: signed } = await (supabase as any)
+                          .from('user-templates')
+                          .createSignedUploadUrl(filePath);
+                        if (!signed) throw new Error('Failed to get upload URL');
+                        await new Promise<void>((resolve, reject) => {
+                          const xhr = new XMLHttpRequest();
+                          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed ${xhr.status}`));
+                          xhr.onerror = () => reject(new Error('Network error'));
+                          xhr.open('PUT', signed.signedUrl);
+                          xhr.send(file);
+                        });
+                        const { data: { publicUrl } } = (supabase as any)
+                          .from('user-templates')
+                          .getPublicUrl(filePath);
+                        records.push({ demo_link: publicUrl, user_id: user.id, project_id: id });
+                      })
+                    );
+                    if (records.length) {
+                      await (supabase as any)
+                        .from('demo')
+                        .insert(records);
+                      const { data } = await (supabase as any)
+                        .from('demo')
+                        .select('id, demo_link')
+                        .eq('project_id', id)
+                        .order('created_at', { ascending: false });
+                      setProjectDemos((data as any) || []);
+                      toast.success(`Загружено ${records.length} демо`);
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    toast.error('Не удалось загрузить демо');
+                  } finally {
+                    setIsUploadingDemos(false);
+                  }
+                }}
+                className="hidden"
+                id="demo-multi-upload"
+              />
+              <label htmlFor="demo-multi-upload">
+                <Button variant="outline" asChild>
+                  <span className="cursor-pointer">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Выбрать файлы
+                  </span>
+                </Button>
+              </label>
+              {isUploadingDemos && (
+                <p className="text-xs text-neutral-500 mt-2">Загрузка...</p>
+              )}
+            </div>
 
             <div className="mt-6">
               <h3 className="text-sm font-medium text-neutral-700 mb-3">Загруженные демо</h3>
@@ -249,7 +305,32 @@ const ProjectEdit = () => {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {projectDemos.map((d) => (
-                    <video key={d.id} src={d.demo_link} controls className="w-full rounded-lg" />
+                    <div key={d.id} className="relative group">
+                      <video src={d.demo_link} controls className="w-full rounded-lg" />
+                      <button
+                        aria-label="Удалить демо"
+                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        onClick={async () => {
+                          try {
+                            // Remove DB row
+                            await (supabase as any).from('demo').delete().eq('id', d.id);
+                            // Remove from storage if possible
+                            const idx = d.demo_link.indexOf('/user-templates/');
+                            if (idx !== -1) {
+                              const path = d.demo_link.substring(idx + '/user-templates/'.length);
+                              await (supabase as any).storage.from('user-templates').remove([path]);
+                            }
+                            setProjectDemos((prev) => prev.filter((x) => x.id !== d.id));
+                            toast.success('Демо удалено');
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Не удалось удалить демо');
+                          }
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -554,40 +635,30 @@ const ProjectEdit = () => {
         <div className="container mx-auto py-8 px-4">
           {/* Navigation breadcrumb */}
           <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500 mb-8">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
-                1
+            {[
+              { step: 2, label: 'Демо' },
+              { step: 3, label: 'Музыка' },
+              { step: 4, label: 'Хуки' },
+            ].map((s, idx) => (
+              <div key={s.step} className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep === s.step ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}`}
+                  onClick={() => setCurrentStep(s.step)}
+                  aria-label={`Перейти к шагу ${s.label}`}
+                >
+                  {idx + 3}
+                </button>
+                <button
+                  type="button"
+                  className={`${currentStep === s.step ? 'font-medium text-neutral-900' : currentStep > s.step ? 'text-neutral-900' : 'text-neutral-500'} hover:text-neutral-900`}
+                  onClick={() => setCurrentStep(s.step)}
+                  aria-label={`Перейти к шагу ${s.label}`}
+                >
+                  {s.label}
+                </button>
               </div>
-              <span className="text-neutral-900">Новая кампания</span>
-            </div>
-            <div className="w-2 h-px bg-neutral-300"></div>
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center text-xs">
-                2
-              </div>
-              <span className="text-neutral-900">Продукт</span>
-            </div>
-            <div className="w-2 h-px bg-neutral-300"></div>
-            <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 2 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                3
-              </div>
-              <span className={currentStep === 2 ? 'font-medium text-neutral-900' : currentStep > 2 ? 'text-neutral-900' : 'text-neutral-500'}>Демо</span>
-            </div>
-            <div className="w-2 h-px bg-neutral-300"></div>
-            <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 3 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                4
-              </div>
-              <span className={currentStep === 3 ? 'font-medium text-neutral-900' : currentStep > 3 ? 'text-neutral-900' : 'text-neutral-500'}>Музыка</span>
-            </div>
-            <div className="w-2 h-px bg-neutral-300"></div>
-            <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 ${currentStep === 4 ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'} rounded-full flex items-center justify-center text-xs`}>
-                5
-              </div>
-              <span className={currentStep === 4 ? 'font-medium text-neutral-900' : currentStep > 4 ? 'text-neutral-900' : 'text-neutral-500'}>Хуки</span>
-            </div>
+            ))}
           </div>
 
           {/* Step content */}
