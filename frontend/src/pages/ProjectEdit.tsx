@@ -72,6 +72,12 @@ const ProjectEdit = () => {
   const [hookFiles, setHookFiles] = useState<File[]>([]);
   const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
   const [isUploadingHooks, setIsUploadingHooks] = useState(false);
+  const [projectDemos, setProjectDemos] = useState<{ id: number; demo_link: string }[]>([]);
+  const [isLoadingDemos, setIsLoadingDemos] = useState(false);
+  const [userSounds, setUserSounds] = useState<{ id: number; name: string; sound_link: string }[]>([]);
+  const [isLoadingSounds, setIsLoadingSounds] = useState(false);
+  const [selectedSoundId, setSelectedSoundId] = useState<number | null>(null);
+  const [uploadedHooks, setUploadedHooks] = useState<{ url: string; name: string; size: number; type: string }[]>([]);
 
   // Load project data when editing existing project
   useEffect(() => {
@@ -95,6 +101,46 @@ const ProjectEdit = () => {
       }
     }
   }, [project]);
+
+  // Fetch project demos when project id is available
+  useEffect(() => {
+    const fetchDemos = async () => {
+      if (!id) return;
+      setIsLoadingDemos(true);
+      const { data, error } = await (supabase as any)
+        .from("demo")
+        .select("id, demo_link")
+        .eq("project_id", id)
+        .order("created_at", { ascending: false });
+      if (!error && data) setProjectDemos(data as any);
+      setIsLoadingDemos(false);
+    };
+    fetchDemos();
+  }, [id]);
+
+  // Fetch user sounds and preselect project's sound
+  useEffect(() => {
+    const fetchSounds = async () => {
+      if (!user) return;
+      setIsLoadingSounds(true);
+      const { data, error } = await (supabase as any)
+        .from("sound")
+        .select("id, name, sound_link")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (!error && data) setUserSounds(data as any);
+      setIsLoadingSounds(false);
+    };
+    fetchSounds();
+  }, [user]);
+
+  useEffect(() => {
+    if (!project) return;
+    const candidate = (project as any).sound_id;
+    if (candidate !== undefined && candidate !== null) {
+      setSelectedSoundId(Number(candidate));
+    }
+  }, [project?.id]);
 
   const handleProjectDetailsSubmit = async () => {
     if (!formData.name || !formData.description || !formData.target_audience || !formData.tone_of_voice) {
@@ -180,13 +226,34 @@ const ProjectEdit = () => {
               </p>
             </div>
             <DemoUploader
-              onCancel={() => navigate("/projects")}
-              onSuccess={() => {
-                toast.success("Демо видео загружено");
-                setCurrentStep(3);
+              onCancel={() => {}}
+              onSuccess={async () => {
+                // Stay on step; refresh list
+                if (!id) return;
+                const { data } = await (supabase as any)
+                  .from("demo")
+                  .select("id, demo_link")
+                  .eq("project_id", id)
+                  .order("created_at", { ascending: false });
+                setProjectDemos((data as any) || []);
               }}
               projectId={id}
             />
+
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-neutral-700 mb-3">Загруженные демо</h3>
+              {isLoadingDemos ? (
+                <div className="text-neutral-500 text-sm">Загрузка...</div>
+              ) : projectDemos.length === 0 ? (
+                <div className="text-neutral-500 text-sm">Пока нет демо-видео</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {projectDemos.map((d) => (
+                    <video key={d.id} src={d.demo_link} controls className="w-full rounded-lg" />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         );
 
@@ -200,24 +267,47 @@ const ProjectEdit = () => {
               </p>
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-3">
               <Button variant="outline" className="gap-2" onClick={() => setIsAudioDialogOpen(true)}>
                 <Upload className="w-4 h-4" /> Загрузить аудио
               </Button>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-neutral-700 mb-3">Ваши аудио</h3>
+              {isLoadingSounds ? (
+                <div className="text-neutral-500 text-sm">Загрузка...</div>
+              ) : userSounds.length === 0 ? (
+                <div className="text-neutral-500 text-sm">Пока нет аудио</div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {userSounds.map((s) => (
+                    <div key={s.id} className={`p-3 border rounded-lg flex items-center justify-between ${selectedSoundId === s.id ? 'border-neutral-900' : 'border-neutral-200'}`}>
+                      <div>
+                        <div className="text-sm font-medium">{s.name}</div>
+                        <audio className="mt-1" src={s.sound_link} controls />
+                      </div>
+                      <Button size="sm" variant={selectedSoundId === s.id ? 'default' : 'outline'} onClick={() => setSelectedSoundId(s.id)}>
+                        {selectedSoundId === s.id ? 'Выбрано' : 'Выбрать'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <AudioUploadDialog
               isOpen={isAudioDialogOpen}
               onClose={() => setIsAudioDialogOpen(false)}
               onSuccess={async (soundId) => {
-                if (!id) return;
-                try {
-                  await updateProjectMutation.mutateAsync({ id, sound_id: soundId } as any);
-                  toast.success("Музыка добавлена к проекту");
-                  setIsAudioDialogOpen(false);
-                  setCurrentStep(4);
-                } catch (e) {
-                  console.error(e);
-                  toast.error("Не удалось сохранить музыку в проекте");
+                // Stay on step; refresh list and select uploaded
+                setSelectedSoundId(soundId);
+                if (user) {
+                  const { data } = await (supabase as any)
+                    .from('sound')
+                    .select('id, name, sound_link')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+                  setUserSounds((data as any) || []);
                 }
               }}
             />
@@ -243,7 +333,7 @@ const ProjectEdit = () => {
                 multiple
                 onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
-                  if (!files.length || !id || !user) return;
+                  if (!files.length || !user) return;
                   try {
                     setIsUploadingHooks(true);
                     const uploaded = await Promise.all(
@@ -272,8 +362,7 @@ const ProjectEdit = () => {
                         return { url: publicUrl, name: file.name, size: file.size, type: 'hook' };
                       })
                     );
-
-                    await updateProjectMutation.mutateAsync({ id, hooks: uploaded as any } as any);
+                    setUploadedHooks((prev) => [...prev, ...uploaded]);
                     toast.success(`Загружено ${uploaded.length} хуков`);
                   } catch (err) {
                     console.error(err);
@@ -298,6 +387,13 @@ const ProjectEdit = () => {
               </p>
               {isUploadingHooks && (
                 <p className="text-xs text-neutral-500 mt-2">Загрузка...</p>
+              )}
+              {uploadedHooks.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                  {uploadedHooks.map((h, idx) => (
+                    <video key={idx} src={h.url} controls className="w-full rounded-lg" />
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -522,9 +618,24 @@ const ProjectEdit = () => {
             
             {currentStep === 4 ? (
               <Button 
-                onClick={handleFinalize}
+                onClick={async () => {
+                  if (!id) return;
+                  try {
+                    // Persist hooks and selected sound before starting
+                    const updates: any = {};
+                    if (uploadedHooks.length > 0) updates.hooks = uploadedHooks as any;
+                    if (selectedSoundId) updates.sound_id = selectedSoundId as any;
+                    if (Object.keys(updates).length > 0) {
+                      await updateProjectMutation.mutateAsync({ id, ...updates } as any);
+                    }
+                    await handleFinalize();
+                  } catch (e) {
+                    console.error(e);
+                    toast.error('Не удалось сохранить данные проекта');
+                  }
+                }}
                 className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
-                disabled={updateProjectMutation.isPending}
+                disabled={updateProjectMutation.isPending || isUploadingHooks}
               >
                 {updateProjectMutation.isPending && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -533,7 +644,22 @@ const ProjectEdit = () => {
               </Button>
             ) : (
               <Button 
-                onClick={() => setCurrentStep(currentStep + 1)}
+                onClick={async () => {
+                  // Persist selection/progress between steps
+                  if (!id) {
+                    setCurrentStep(currentStep + 1);
+                    return;
+                  }
+                  try {
+                    if (currentStep === 3 && selectedSoundId) {
+                      await updateProjectMutation.mutateAsync({ id, sound_id: selectedSoundId } as any);
+                    }
+                  } catch (e) {
+                    console.error(e);
+                  } finally {
+                    setCurrentStep(currentStep + 1);
+                  }
+                }}
                 className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800"
               >
                 Продолжить
