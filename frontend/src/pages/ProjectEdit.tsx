@@ -100,6 +100,23 @@ const ProjectEdit = () => {
         setIsProjectDetailsOpen(false);
         setCurrentStep(2);
       }
+
+      // Normalize existing hooks into UI shape
+      const existingHooks: any = (project as any).hooks;
+      let normalizedHooks: { url: string; name: string; size: number; type: string }[] = [];
+      try {
+        const value = typeof existingHooks === 'string' ? JSON.parse(existingHooks) : existingHooks;
+        if (Array.isArray(value)) {
+          if (value.length > 0 && typeof value[0] === 'string') {
+            normalizedHooks = (value as string[]).map((u) => ({ url: u, name: '', size: 0, type: 'hook' }));
+          } else if (value.length > 0 && typeof value[0] === 'object') {
+            normalizedHooks = value as any;
+          }
+        }
+      } catch (_) {
+        // ignore parse errors
+      }
+      setUploadedHooks(normalizedHooks);
     }
   }, [project]);
 
@@ -511,7 +528,12 @@ const ProjectEdit = () => {
                         return { url: publicUrl, name: file.name, size: file.size, type: 'hook' };
                       })
                     );
-                    setUploadedHooks((prev) => [...prev, ...uploaded]);
+                    const newMerged = [...uploadedHooks, ...uploaded];
+                    setUploadedHooks(newMerged);
+                    if (id) {
+                      const urls = newMerged.map((h) => h.url);
+                      await updateProjectMutation.mutateAsync({ id, hooks: urls as any } as any);
+                    }
                     toast.success(`Загружено ${uploaded.length} хуков`);
                   } catch (err) {
                     console.error(err);
@@ -554,7 +576,12 @@ const ProjectEdit = () => {
                               const path = u.substring(idx + '/user-templates/'.length);
                               await (supabase as any).storage.from('user-templates').remove([path]);
                             }
-                            setUploadedHooks((prev) => prev.filter((_, i) => i !== idx));
+                            const next = uploadedHooks.filter((_, i) => i !== idx);
+                            setUploadedHooks(next);
+                            if (id) {
+                              const urls = next.map((x) => x.url);
+                              await updateProjectMutation.mutateAsync({ id, hooks: urls as any } as any);
+                            }
                             toast.success('Хук удалён');
                           } catch (err) {
                             console.error(err);
