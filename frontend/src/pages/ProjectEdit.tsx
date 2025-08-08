@@ -636,29 +636,40 @@ const ProjectEdit = () => {
           {/* Navigation breadcrumb */}
           <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500 mb-8">
             {[
-              { step: 2, label: 'Демо' },
-              { step: 3, label: 'Музыка' },
-              { step: 4, label: 'Хуки' },
-            ].map((s, idx) => (
-              <div key={s.step} className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep === s.step ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}`}
-                  onClick={() => setCurrentStep(s.step)}
-                  aria-label={`Перейти к шагу ${s.label}`}
-                >
-                  {idx + 3}
-                </button>
-                <button
-                  type="button"
-                  className={`${currentStep === s.step ? 'font-medium text-neutral-900' : currentStep > s.step ? 'text-neutral-900' : 'text-neutral-500'} hover:text-neutral-900`}
-                  onClick={() => setCurrentStep(s.step)}
-                  aria-label={`Перейти к шагу ${s.label}`}
-                >
-                  {s.label}
-                </button>
-              </div>
-            ))}
+              { display: 2, label: 'Продукт' as const },
+              { display: 3, label: 'Демо' as const, targetStep: 2 },
+              { display: 4, label: 'Музыка' as const, targetStep: 3 },
+              { display: 5, label: 'Хуки' as const, targetStep: 4 },
+            ].map((item) => {
+              const isActive = item.targetStep ? currentStep === item.targetStep : false;
+              const handleClick = () => {
+                if (item.label === 'Продукт') {
+                  setIsProjectDetailsOpen(true);
+                  return;
+                }
+                if (item.targetStep) setCurrentStep(item.targetStep);
+              };
+              return (
+                <div key={item.display} className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isActive ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}`}
+                    onClick={handleClick}
+                    aria-label={`Перейти к шагу ${item.label}`}
+                  >
+                    {item.display}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${isActive ? 'font-medium text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'}`}
+                    onClick={handleClick}
+                    aria-label={`Перейти к шагу ${item.label}`}
+                  >
+                    {item.label}
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Step content */}
