@@ -54,8 +54,10 @@ const NavItem = ({
 const Navbar = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const currentTab = searchParams.get("tab") || "aiugc";
   const isProjectsPage = location.pathname.startsWith("/projects");
+  const isDashboardPage = location.pathname.startsWith("/dashboard");
+  // Активный таб определяем ТОЛЬКО на /dashboard, иначе никакой таб не активен
+  const currentTab = isDashboardPage ? (searchParams.get("tab") || "aiugc") : undefined;
   const {
     user,
     signOut
@@ -101,9 +103,9 @@ const Navbar = () => {
       
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
         <NavItem icon={<FolderOpen size={18} />} label="Мои проекты" to="/projects" active={isProjectsPage} />
-        <NavItem icon={<Home size={18} />} label="AI UGC Аватары" to="/dashboard?tab=aiugc" active={currentTab === "aiugc"} />
-        <NavItem icon={<Film size={18} />} label="Мои видео" to="/dashboard?tab=videos" active={currentTab === "videos"} />
-        <NavItem icon={<Grid size={18} />} label="Карусели" to="/dashboard?tab=carousels" active={currentTab === "carousels"} />
+        <NavItem icon={<Home size={18} />} label="AI UGC Аватары" to="/dashboard?tab=aiugc" active={isDashboardPage && currentTab === "aiugc"} />
+        <NavItem icon={<Film size={18} />} label="Мои видео" to="/dashboard?tab=videos" active={isDashboardPage && currentTab === "videos"} />
+        <NavItem icon={<Grid size={18} />} label="Карусели" to="/dashboard?tab=carousels" active={isDashboardPage && currentTab === "carousels"} />
         <NavItem icon={<Layers size={18} />} label="Мемы" disabled={true} />
         <NavItem icon={<Calendar size={18} />} label="Расписание" disabled={true} />
       </nav>
