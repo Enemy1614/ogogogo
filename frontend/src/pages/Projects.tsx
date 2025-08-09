@@ -37,7 +37,7 @@ const ProjectRow = ({ project, onDelete, isDeleting }: ProjectRowProps) => {
   return (
     <div
       onClick={() => navigate(`/projects/${project.id}/edit`)}
-      className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-6 px-4 py-3 rounded-lg hover:bg-neutral-50 cursor-pointer"
+      className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-6 px-4 py-3 rounded-[12px] hover:bg-slate-100 cursor-pointer"
       role="button"
       tabIndex={0}
       aria-label={`Открыть проект ${project.name ?? "проект"}`}
@@ -49,7 +49,7 @@ const ProjectRow = ({ project, onDelete, isDeleting }: ProjectRowProps) => {
       }}
     >
       {/* Thumbnail */}
-      <div className="w-10 h-10 rounded-md overflow-hidden bg-neutral-200 flex items-center justify-center">
+      <div className="w-10 h-10 rounded-md overflow-hidden bg-slate-200 flex items-center justify-center">
         <img
           src="/placeholder.svg"
           alt="Миниатюра проекта"
@@ -59,14 +59,14 @@ const ProjectRow = ({ project, onDelete, isDeleting }: ProjectRowProps) => {
 
       {/* Name and status */}
       <div className="flex items-center gap-4 min-w-0">
-        <span className="font-medium text-neutral-800 truncate">
+        <span className="font-medium text-slate-800 truncate">
           {project.name || "My campaign"}
         </span>
-        <Badge variant="outline">Черновик</Badge>
+        <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200">Черновик</Badge>
       </div>
 
       {/* Date */}
-      <span className="text-sm text-neutral-500 justify-self-end whitespace-nowrap">
+      <span className="text-sm text-slate-500 justify-self-end whitespace-nowrap">
         {formatDateTime(project.created_at)}
       </span>
 
@@ -127,19 +127,19 @@ const Projects = () => {
   };
 
   return (
-    <div className="flex h-screen bg-neutral-100/50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       <NavbarWrapper>
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 font-[Poppins,_-apple-system,_BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif]">
           <div className="max-w-5xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
               <div>
-                <p className="text-sm text-neutral-500 mb-1">Проекты</p>
-                <h1 className="text-4xl font-bold text-black">Ваши проекты</h1>
+                <p className="text-sm text-slate-500 mb-1">Проекты</p>
+                <h1 className="text-4xl font-bold text-slate-900">Ваши проекты</h1>
               </div>
               <Button
                 onClick={handleCreateProject}
-                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg px-5 py-2.5"
+                className="rounded-[12px] px-5 py-2.5 bg-slate-950 text-white hover:bg-slate-900 border border-slate-950"
               >
                 Новый проект
               </Button>
@@ -148,8 +148,8 @@ const Projects = () => {
             {/* Loading State */}
             {isLoading && (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
-                <span className="ml-2 text-neutral-600">Загрузка проектов...</span>
+                <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+                <span className="ml-2 text-slate-600">Загрузка проектов...</span>
               </div>
             )}
 
@@ -157,12 +157,12 @@ const Projects = () => {
             {error && (
               <div className="text-center py-12">
                 <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                    <Trash className="w-8 h-8 text-red-500" />
+                  <div className="w-16 h-16 bg-[#EF4444]/10 rounded-full flex items-center justify-center">
+                    <Trash className="w-8 h-8 text-[#EF4444]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-neutral-900">Ошибка загрузки</h3>
-                    <p className="text-neutral-600 mt-1">
+                    <h3 className="text-lg font-medium text-slate-900">Ошибка загрузки</h3>
+                    <p className="text-slate-600 mt-1">
                       Не удалось загрузить проекты. Попробуйте обновить страницу.
                     </p>
                   </div>
