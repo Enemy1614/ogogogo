@@ -1,9 +1,8 @@
 import NavbarWrapper from "@/components/NavbarWrapper";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Plus, Settings, Trash, Eye, Pause, Play, Loader2 } from "lucide-react";
+import { MoreHorizontal, Settings, Trash, Loader2, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,40 +13,97 @@ import { useNavigate } from "react-router-dom";
 import { useProjects, useDeleteProject, type Project } from "@/hooks/useProjects";
 import { toast } from "sonner";
 
+// Ряд списка кампаний в стиле эталона
+interface ProjectRowProps {
+  project: Project;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}
 
+const ProjectRow = ({ project, onDelete, isDeleting }: ProjectRowProps) => {
+  const navigate = useNavigate();
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'active':
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Активен</Badge>;
-    case 'generating':
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">В процессе генерации</Badge>;
-    case 'draft':
-      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Черновик</Badge>;
-    case 'paused':
-      return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Приостановлен</Badge>;
-    case 'completed':
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Завершен</Badge>;
-    default:
-      return <Badge>Неизвестно</Badge>;
-  }
-};
+  const formatDateTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString("ru-RU", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
 
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'active':
-      return <Play className="w-4 h-4 text-green-600" />;
-    case 'generating':
-      return <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />;
-    case 'draft':
-      return <Settings className="w-4 h-4 text-gray-600" />;
-    case 'paused':
-      return <Pause className="w-4 h-4 text-orange-600" />;
-    case 'completed':
-      return <Play className="w-4 h-4 text-green-600" />;
-    default:
-      return null;
-  }
+  return (
+    <div
+      onClick={() => navigate(`/projects/${project.id}/edit`)}
+      className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-6 px-4 py-3 rounded-lg hover:bg-neutral-50 cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={`Открыть проект ${project.name ?? "проект"}`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/projects/${project.id}/edit`);
+        }
+      }}
+    >
+      {/* Thumbnail */}
+      <div className="w-10 h-10 rounded-md overflow-hidden bg-neutral-200 flex items-center justify-center">
+        <img
+          src="/placeholder.svg"
+          alt="Миниатюра проекта"
+          className="w-7 h-7 object-cover rounded"
+        />
+      </div>
+
+      {/* Name and status */}
+      <div className="flex items-center gap-4 min-w-0">
+        <span className="font-medium text-neutral-800 truncate">
+          {project.name || "My campaign"}
+        </span>
+        <Badge variant="outline">Черновик</Badge>
+      </div>
+
+      {/* Date */}
+      <span className="text-sm text-neutral-500 justify-self-end whitespace-nowrap">
+        {formatDateTime(project.created_at)}
+      </span>
+
+      {/* Actions */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-8 h-8"
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Открыть действия"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuItem onClick={() => navigate(`/projects/${project.id}/edit`)}>
+            <Settings className="w-4 h-4 mr-2" />
+            Редактировать
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onDelete(project.id)}
+            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Trash className="w-4 h-4 mr-2" />
+            )}
+            Удалить
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
 };
 
 const Projects = () => {
@@ -64,44 +120,28 @@ const Projects = () => {
     navigate(`/projects/${projectId}/edit`);
   };
 
-  const handleViewProject = (projectId: string) => {
-    // Navigate to project details/dashboard
-    console.log('View project:', projectId);
-  };
-
   const handleDeleteProject = (projectId: string) => {
     if (confirm('Вы уверены, что хотите удалить этот проект?')) {
       deleteProjectMutation.mutate(projectId);
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-neutral-100/50 overflow-hidden">
       <NavbarWrapper>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
+          <div className="max-w-5xl mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-neutral-900">Мои проекты</h1>
-                <p className="text-neutral-600 mt-1">
-                  Управляйте своими UGC кампаниями и отслеживайте прогресс
-                </p>
+                <p className="text-sm text-neutral-500 mb-1">Проекты</p>
+                <h1 className="text-4xl font-bold text-black">Ваши проекты</h1>
               </div>
-              <Button 
+              <Button
                 onClick={handleCreateProject}
-                className="flex items-center gap-2"
+                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg px-5 py-2.5"
               >
-                <Plus className="w-4 h-4" />
-                Добавить проект
+                Новый проект
               </Button>
             </div>
 
@@ -153,76 +193,19 @@ const Projects = () => {
               </div>
             )}
 
-            {/* Projects Grid */}
+            {/* Projects List */}
             {!isLoading && !error && projects.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-col space-y-2">
                 {projects.map((project) => (
-                  <Card key={project.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(project.status)}
-                          <CardTitle className="text-lg">{project.name}</CardTitle>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewProject(project.id)}>
-                              <Eye className="w-4 h-4 mr-2" />
-                              Просмотр
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditProject(project.id)}>
-                              <Settings className="w-4 h-4 mr-2" />
-                              Настройки
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteProject(project.id)}
-                              className="text-red-600"
-                              disabled={deleteProjectMutation.isPending}
-                            >
-                              {deleteProjectMutation.isPending ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              ) : (
-                                <Trash className="w-4 h-4 mr-2" />
-                              )}
-                              Удалить
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        {getStatusBadge(project.status)}
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="pb-4">
-                      <CardDescription className="text-sm mb-3 line-clamp-2">
-                        {project.description}
-                      </CardDescription>
-                      
-                      <div className="space-y-2 text-xs text-neutral-600">
-                        <div className="flex justify-between">
-                          <span>Создан:</span>
-                          <span>{formatDate(project.created_at)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-
-                    <CardFooter className="pt-0">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full"
-                        onClick={() => handleViewProject(project.id)}
-                      >
-                        Открыть проект
-                      </Button>
-                    </CardFooter>
-                  </Card>
+                  <ProjectRow
+                    key={project.id}
+                    project={project}
+                    onDelete={handleDeleteProject}
+                    isDeleting={
+                      deleteProjectMutation.isPending &&
+                      (deleteProjectMutation.variables as unknown as string) === project.id
+                    }
+                  />
                 ))}
               </div>
             )}
